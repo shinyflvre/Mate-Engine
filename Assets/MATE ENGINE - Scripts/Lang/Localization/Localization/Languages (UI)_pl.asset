@@ -1,0 +1,248 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Languages (UI)_pl
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: pl-PL
+  m_SharedData: {fileID: 11400000, guid: 698e167bd107c3a40a5376082f2e2f35, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 96968105984
+    m_Localized: MATE ENGINE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11321839968256
+    m_Localized: Kości
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11796140253184
+    m_Localized: Limit FPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11245612687360
+    m_Localized: Zapisz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11320741060608
+    m_Localized: Resetuj
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11321303097344
+    m_Localized: Wielokąty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11245205839872
+    m_Localized: Rozmiar Awatara
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11244643803136
+    m_Localized: Głowa podąża za myszką
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11243918188544
+    m_Localized: Awatar Może Tańczyć
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11241108004864
+    m_Localized: Awatar Zawsze Z Przodu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11239019241472
+    m_Localized: Próg Głośności Tańca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11236599128064
+    m_Localized: Czas Przejścia Animacji
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11105833312256
+    m_Localized: Czas Zmiany Animacji
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23418267230208
+    m_Localized: Ustawienia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23684911718400
+    m_Localized: Głośność Interakcji
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24123241652224
+    m_Localized: Głośność Efektów
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24123816271872
+    m_Localized: Głośność Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24124437028864
+    m_Localized: Grafika
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24125049397248
+    m_Localized: Ultra
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24125577879552
+    m_Localized: Bardzo Wysoka
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24126186053632
+    m_Localized: Wysoka
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24126735507456
+    m_Localized: Normalna
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24509532856320
+    m_Localized: Niska
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24510153613312
+    m_Localized: Zawartość Steam
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24510665318400
+    m_Localized: Kwietna Aureola
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27326909767680
+    m_Localized: Dodaj
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27328117727232
+    m_Localized: Usuń
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37370367827968
+    m_Localized: Język
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1494319580045312
+    m_Localized: Eksperymentalne
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1494291876667392
+    m_Localized: Wczytaj Moda
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1494394716807168
+    m_Localized: Siadanie Na Oknach
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1494416451690496
+    m_Localized: Śledzenie Pozycji Okien Może Stać Się Przyczyną Banów W Grach Posiadających Oprogramowanie Anti-Cheat.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1971210921435136
+    m_Localized: Bogata Obecność Discord (Rich Presence)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1971386927013888
+    m_Localized: English
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1971392559964160
+    m_Localized: "\u65E5\u672C\u8A9E"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1971393197498368
+    m_Localized: "Espa\xF1ol"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1971466828505088
+    m_Localized: "\u4E2D\u6587"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1971391947595776
+    m_Localized: "\u0420\u0443\u0441\u0441\u043A\u0438\u0439"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1982288996851712
+    m_Localized: "\uD55C\uAD6D\uC5B4"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2011903232565248
+    m_Localized: "Witaj w \u30E1\u30A4\u30C8\u30A8\u30F3\u30B8\u30F3 (MateEngine)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2012023386791936
+    m_Localized: "Ta aplikacja jest pracą w toku, więc nowe funkcje będą dodawane
+      w miarę upływu czasu. Została utworzona przez społeczność anime, dla społecznośći
+      anime. Mogą w niej występować małe błędy tu i tam \u2014 jeżeli jakieś znajdziesz,
+      możesz je zgłosić poprzez najpierw kliknięcie prawym przyciskiem myszy na awatar,
+      a później użycie przycisku w kształcie robaka."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2012176361447424
+    m_Localized: Jak Używać MateEngine (Speedrun)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2012219415977984
+    m_Localized: "MateEngine jest bardzo prosty w obsłudze! Wystarczy kliknąć prawym
+      przyciskiem myszy, aby otworzyć menu ustawień. Tam możesz zmieniać rozmiar
+      awatara, włączać i wyłączać efekty, dodawać programy do których twój awatar
+      może tańczyć, lub wczytywać mody i pliki modeli VRM/ME. W kolejnym kroku
+      wyjaśnię jak wczytywać własne awatary." 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2012314333077504
+    m_Localized: Używanie Własnych Modeli 1/2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2012317843709952
+    m_Localized: Aby użyć własnego modelu, potrzebujesz pliku .VRM. Modele .VRM 
+      możesz pobierać z stron takich jak Booth.pm albo VRoidHub. W momencie 
+      kiedy będziesz mieć już przygotowany plik .VRM, otwórz menu ustawień i użyj 
+      przycisku 'VRM'. To otworzy eksplorator plików, gdzie możesz wybrać plik VRM.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2012431912001536
+    m_Localized: Używanie Własnych Modeli 2/2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2012464099090432
+    m_Localized: "Czasami plik .VRM może się nie wczytać. Najczęściej nie jest to usterka po
+      stronie MateEngine, a dzieje się tak często z powodu błędnych shader-ów, lub 
+      niepoprawnego eksportu modelu. Jeżeli tak się stanie, zajrzyj do oficjalnej
+      dokumentacji UniVRM. Niektóre programy starają się naprawić problem samemu,
+      ale MateEngine tego nie potrafi (i nie będzie mógł). Odpowiedzialność za
+      prawidłowe wyeksportowanie modelu VRM leży po stronie użytkownika."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2024320264036352
+    m_Localized: Pomiń
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2024395421769728
+    m_Localized: Zakończ
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2024529517862912
+    m_Localized: Cofnij
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2024532080582656
+    m_Localized: Dalej
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2024289331044352
+    m_Localized: "Language - \u8A00\u8A9E (Gengo) - \u042F\u0437\u044B\u043A (Yazyk)
+      - Idioma - \u8A9E\u8A00 (Y\u01D4y\xE1n) - Sprache - Langue - \uC5B8\uC5B4 (Eoneo)"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
