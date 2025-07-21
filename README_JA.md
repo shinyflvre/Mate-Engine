@@ -1,7 +1,8 @@
-# 🌐 Language / 言語選択
+# 🌐 Language / 言語選択 / Bahasa
 
 - [English](./README.md)
 - [日本語](#)
+- [Bahasa Indonesia](./README_ID.md)
 
 ---
 
