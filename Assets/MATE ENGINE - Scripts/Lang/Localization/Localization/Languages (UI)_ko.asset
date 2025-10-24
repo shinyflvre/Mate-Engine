@@ -27,11 +27,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11236599128064
-    m_Localized: "\uC560\uB2C8\uBA54\uC774\uC158 \uBC14\uB00C\uB294 \uC18D\uB3C4"
+    m_Localized: "\uC560\uB2C8\uBA54\uC774\uC158 \uC804\uD658 \uC2DC\uAC04"
     m_Metadata:
       m_Items: []
   - m_Id: 11239019241472
-    m_Localized: "\uB304\uC2A4 \uC2DC\uC791 \uC18C\uB9AC \uAE30\uC900"
+    m_Localized: "\uB304\uC2A4 \uC2DC\uC791 \uAE30\uC900 \uC74C\uB7C9"
     m_Metadata:
       m_Items: []
   - m_Id: 11241108004864
@@ -63,7 +63,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11321839968256
-    m_Localized: "\uBF08\uB300 \uC218"
+    m_Localized: "\uBCF8 \uC218"
     m_Metadata:
       m_Items: []
   - m_Id: 11796140253184
@@ -83,7 +83,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 24123816271872
-    m_Localized: "\uBA54\uB274 \uC74C\uB7C9\n"
+    m_Localized: "\uBA54\uB274 \uC74C\uB7C9"
     m_Metadata:
       m_Items: []
   - m_Id: 24124437028864
@@ -123,7 +123,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 27328117727232
-    m_Localized: "\uC0AD\uC81C"
+    m_Localized: "\uC81C\uAC70"
     m_Metadata:
       m_Items: []
   - m_Id: 37370367827968
@@ -566,7 +566,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 64486115202080768
-    m_Localized: "\uB304\uC2A4 \uBCC0\uACBD \uC2DC\uAC04"
+    m_Localized: "\uB304\uC2A4 \uC720\uC9C0 \uC2DC\uAC04"
     m_Metadata:
       m_Items: []
   - m_Id: 64486115827032064
@@ -722,17 +722,18 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71028682257375233
-    m_Localized: "\uCC3D\uACFC \uC791\uC5C5 \uD45C\uC2DC\uC904 \uC704\uC5D0 \uC549\uAE30"
+    m_Localized: "\uCC3D \uB610\uB294 \uC791\uC5C5 \uD45C\uC2DC\uC904 \uC704\uC5D0
+      \uC549\uAE30"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569536
-    m_Localized: "\uC774 \uAE30\uB2A5\uC740 \uC548\uD2F0\uCE58\uD2B8\uAC00 \uC788\uB294
-      \uAC8C\uC784\uC5D0\uC11C\uB294 \uACC4\uC815\uC774 \uC81C\uD55C\uB420 \uC218
-      \uC788\uC73C\uB2C8 \uC8FC\uC758\uD574 \uC8FC\uC138\uC694."
+    m_Localized: "\uC774 \uAE30\uB2A5\uC740 \uC548\uD2F0\uCE58\uD2B8\uAC00 \uC801\uC6A9\uB41C
+      \uAC8C\uC784\uC5D0\uC11C\uB294 \uACC4\uC815 \uC81C\uD55C\uC758 \uC0AC\uC720\uAC00
+      \uB420 \uC218 \uC788\uC73C\uB2C8 \uC8FC\uC758\uD574 \uC8FC\uC138\uC694."
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569537
-    m_Localized: "\uB514\uC2A4\uCF54\uB4DC \uD65C\uB3D9 \uC0C1\uD0DC \uD45C\uC2DC"
+    m_Localized: "\uB514\uC2A4\uCF54\uB4DC\uC5D0 \uD65C\uB3D9 \uC0C1\uD0DC \uD45C\uC2DC"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569538
@@ -815,7 +816,7 @@ MonoBehaviour:
     m_Localized: "\uAC00\uB054 .VRM \uD30C\uC77C\uC774 \uC81C\uB300\uB85C \uBD88\uB7EC\uC640\uC9C0\uC9C0
       \uC54A\uC744 \uC218 \uC788\uC5B4\uC694. \uB300\uBD80\uBD84 MateEngine\uC758
       \uBB38\uC81C\uAC00 \uC544\uB2C8\uB77C, \uD30C\uC77C\uC744 \uB9CC\uB4E4 \uB54C
-      \uC170\uC774\uB354\uB098 \uBF08\uB300 \uC124\uC815\uC774 \uC798\uBABB\uB418\uC5C8\uAE30
+      \uC170\uC774\uB354\uB098 \uBCF8 \uC124\uC815\uC774 \uC798\uBABB\uB418\uC5C8\uAE30
       \uB54C\uBB38\uC774\uC5D0\uC694. \uC774\uB7F0 \uACBD\uC6B0\uC5D0\uB294 UniVRM
       \uACF5\uC2DD \uBB38\uC11C\uB97C \uCC38\uACE0\uD574\uBCF4\uC138\uC694. \uC77C\uBD80
       \uC571\uC740 \uC190\uC0C1\uB41C \uBAA8\uB378\uC744 \uC784\uC2DC\uB85C \uACE0\uCE58\uAE30\uB3C4
@@ -852,7 +853,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569558
-    m_Localized: "\uCC99\uCD94 \uC6C0\uC9C1\uC784"
+    m_Localized: "\uC0C1\uBC18\uC2E0 \uC6C0\uC9C1\uC784"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569559
@@ -876,7 +877,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569564
-    m_Localized: "PNG \uD30C\uC77C\uC740 700KB \uC774\uD558\uC5EC\uC57C \uD569\uB2C8\uB2E4"
+    m_Localized: "PNG \uD30C\uC77C\uC740 700KB \uC774\uD558\uC5EC\uC57C \uD569\uB2C8\uB2E4."
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569565
@@ -892,7 +893,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569568
-    m_Localized: "\uBC1C \uC704\uCE58 \uC790\uB3D9 \uBCF4\uC815"
+    m_Localized: "\uBC1C \uC704\uCE58 \uC790\uB3D9 \uBCF4\uC815 (IK)"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569569
@@ -904,7 +905,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569570
-    m_Localized: "\uC785\uCCB4\uAC10 \uD6A8\uACFC"
+    m_Localized: "\uC570\uBE44\uC5B8\uD2B8 \uC624\uD074\uB8E8\uC804"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569571
@@ -927,7 +928,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569575
-    m_Localized: "GC \uC815\uB9AC"
+    m_Localized: "GC \uAC15\uC81C\uC218\uD589"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569576
@@ -947,138 +948,147 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763840
-    m_Localized: "AMBI \uB77C\uC774\uD2B8"
+    m_Localized: "\uD658\uACBD\uAD11"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763841
-    m_Localized: "AMBI 1 \uAC15\uB3C4"
+    m_Localized: "\uD658\uACBD\uAD11 1 \uAC15\uB3C4"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763842
-    m_Localized: "AMBI 1 \uCC44\uB3C4"
+    m_Localized: "\uD658\uACBD\uAD11 1 \uCC44\uB3C4"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763843
-    m_Localized: "AMBI 1 \uC0C9\uC0C1"
+    m_Localized: "\uD658\uACBD\uAD11 1 \uC0C9\uC0C1"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763844
-    m_Localized: "AMBI 2 \uAC15\uB3C4"
+    m_Localized: "\uD658\uACBD\uAD11 2 \uAC15\uB3C4"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763845
-    m_Localized: "AMBI 2 \uCC44\uB3C4"
+    m_Localized: "\uD658\uACBD\uAD11 2 \uCC44\uB3C4"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763846
-    m_Localized: "AMBI 2 \uC0C9\uC0C1"
+    m_Localized: "\uD658\uACBD\uAD11 2 \uC0C9\uC0C1"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763847
-    m_Localized: "AMBI 3 \uAC15\uB3C4"
+    m_Localized: "\uD658\uACBD\uAD11 3 \uAC15\uB3C4"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763848
-    m_Localized: "AMBI 3 \uCC44\uB3C4"
+    m_Localized: "\uD658\uACBD\uAD11 3 \uCC44\uB3C4"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763849
-    m_Localized: "AMBI 3 \uC0C9\uC0C1"
+    m_Localized: "\uD658\uACBD\uAD11 3 \uC0C9\uC0C1"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682265763850
-    m_Localized: "\uC5E0\uBE44\uC5B8\uD2B8 \uB77C\uC774\uD2B8 \uCF1C\uAE30"
+    m_Localized: "\uD658\uACBD\uAD11 \uCF1C\uAE30"
     m_Metadata:
       m_Items: []
   - m_Id: 71470101493227520
-    m_Localized: "Friday \u2013 pressing this button will activate the alarm on every
-      Friday. You can select additional days or keep it set to only Friday."
+    m_Localized: "\uAE08\uC694\uC77C \u2013 \uB9E4 \uC8FC \uAE08\uC694\uC77C\uC5D0
+      \uC54C\uB78C\uC744 \uC124\uC815\uD569\uB2C8\uB2E4. \uCD94\uAC00 \uC694\uC77C\uC744
+      \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
     m_Metadata:
       m_Items: []
   - m_Id: 71470100155244544
-    m_Localized: "Thursday \u2013 pressing this button will activate the alarm on
-      every Thursday. You can select additional days or keep it set to only Thursday."
+    m_Localized: "\uBAA9\uC694\uC77C \u2013 \uB9E4 \uC8FC \uBAA9\uC694\uC77C\uC5D0
+      \uC54C\uB78C\uC744 \uC124\uC815\uD569\uB2C8\uB2E4. \uCD94\uAC00 \uC694\uC77C\uC744
+      \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
     m_Metadata:
       m_Items: []
   - m_Id: 71470098959867904
-    m_Localized: "Wednesday \u2013 pressing this button will activate the alarm on
-      every Wednesday. You can select additional days or keep it set to only Wednesday."
+    m_Localized: "\uC218\uC694\uC77C \u2013 \uB9E4 \uC8FC \uC218\uC694\uC77C\uC5D0
+      \uC54C\uB78C\uC744 \uC124\uC815\uD569\uB2C8\uB2E4. \uCD94\uAC00 \uC694\uC77C\uC744
+      \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
     m_Metadata:
       m_Items: []
   - m_Id: 71470097592524800
-    m_Localized: "Tuesday \u2013 pressing this button will activate the alarm on
-      every Tuesday. You can select additional days or keep it set to only Tuesday."
+    m_Localized: "\uD654\uC694\uC77C \u2013 \uB9E4 \uC8FC \uD654\uC694\uC77C\uC5D0
+      \uC54C\uB78C\uC744 \uC124\uC815\uD569\uB2C8\uB2E4. \uCD94\uAC00 \uC694\uC77C\uC744
+      \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
     m_Metadata:
       m_Items: []
   - m_Id: 71470095960940544
-    m_Localized: "Monday \u2013 pressing this button will activate the alarm on every
-      Monday. You can select additional days or keep it set to only Monday."
+    m_Localized: "\uC6D4\uC694\uC77C \u2013 \uB9E4 \uC8FC \uC6D4\uC694\uC77C\uC5D0
+      \uC54C\uB78C\uC744 \uC124\uC815\uD569\uB2C8\uB2E4. \uCD94\uAC00 \uC694\uC77C\uC744
+      \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
     m_Metadata:
       m_Items: []
   - m_Id: 71470109877641216
-    m_Localized: "Sunday \u2013 pressing this button will activate the alarm on every
-      Sunday. You can select additional days or keep it set to only Sunday."
+    m_Localized: "\uC77C\uC694\uC77C \u2013 \uB9E4 \uC8FC \uC77C\uC694\uC77C\uC5D0
+      \uC54C\uB78C\uC744 \uC124\uC815\uD569\uB2C8\uB2E4. \uCD94\uAC00 \uC694\uC77C\uC744
+      \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
     m_Metadata:
       m_Items: []
   - m_Id: 71470107461722112
-    m_Localized: "Saturday \u2013 pressing this button will activate the alarm on
-      every Saturday. You can select additional days or keep it set to only Saturday."
+    m_Localized: "\uD1A0\uC694\uC77C \u2013 \uB9E4 \uC8FC \uD1A0\uC694\uC77C\uC5D0
+      \uC54C\uB78C\uC744 \uC124\uC815\uD569\uB2C8\uB2E4. \uCD94\uAC00 \uC694\uC77C\uC744
+      \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
     m_Metadata:
       m_Items: []
   - m_Id: 71470682064592896
-    m_Localized: This is the alarm feature. On the left, you can set the hour (displayed
-      in both AM/PM and 24-hour format). On the right, you can set the minutes. You
-      can also select the days when the alarm should ring. If no days are selected,
-      the alarm will ring every day at the set time. To have it ring only on specific
-      days, select the desired days.
+    m_Localized: "\uC54C\uB78C \uAE30\uB2A5\uC785\uB2C8\uB2E4. \uC67C\uCABD\uC5D0\uC11C
+      \uC2DC\uAC04, \uC624\uB978\uCABD\uC5D0\uC11C \uBD84\uC744 \uC120\uD0DD\uD560
+      \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uB610\uD55C \uC54C\uB78C\uC774 \uC6B8\uB9B4
+      \uB0A0\uC9DC\uB97C \uC9C0\uC815\uD560 \uC218 \uC788\uC73C\uBA70, \uC9C0\uC815\uD558\uC9C0
+      \uC54A\uC73C\uBA74 \uB9E4\uC77C \uC9C0\uC815\uB41C \uC2DC\uAC04\uC5D0 \uC6B8\uB9BD\uB2C8\uB2E4.
+      \uD2B9\uC815 \uC77C\uC790\uC5D0\uB9CC \uC6B8\uB9AC\uAC8C \uD558\uACE0 \uC2F6\uB2E4\uBA74
+      \uCD94\uAC00\uC801\uC73C\uB85C \uC77C\uC790\uB97C \uC124\uC815\uD574\uC8FC\uC138\uC694."
     m_Metadata:
       m_Items: []
   - m_Id: 71751708213026816
-    m_Localized: Add New Alarm
+    m_Localized: "\uC0C8 \uC54C\uB78C \uCD94\uAC00"
     m_Metadata:
       m_Items: []
   - m_Id: 71751796721229824
-    m_Localized: Alarm
+    m_Localized: "\uC54C\uB78C"
     m_Metadata:
       m_Items: []
   - m_Id: 71751947594539008
-    m_Localized: MON.
+    m_Localized: "\uC6D4"
     m_Metadata:
       m_Items: []
   - m_Id: 71751949909794816
-    m_Localized: TUE.
+    m_Localized: "\uD654"
     m_Metadata:
       m_Items: []
   - m_Id: 71751951579127808
-    m_Localized: WED.
+    m_Localized: "\uC218"
     m_Metadata:
       m_Items: []
   - m_Id: 71751953068105728
-    m_Localized: THU.
+    m_Localized: "\uBAA9"
     m_Metadata:
       m_Items: []
   - m_Id: 71751954464808960
-    m_Localized: FRI.
+    m_Localized: "\uAE08"
     m_Metadata:
       m_Items: []
   - m_Id: 71751955819569152
-    m_Localized: SAT.
+    m_Localized: "\uD1A0"
     m_Metadata:
       m_Items: []
   - m_Id: 71751956985585664
-    m_Localized: SUN.
+    m_Localized: "\uC77C"
     m_Metadata:
       m_Items: []
   - m_Id: 71752554812317696
-    m_Localized: Windows Sitting Y Offset
+    m_Localized: "\uCC3D\uC5D0 \uC549\uAE30 \uC218\uC9C1 \uC624\uD504\uC14B"
     m_Metadata:
       m_Items: []
   - m_Id: 71752669165821952
-    m_Localized: ERROR!
+    m_Localized: "\uC5D0\uB7EC!"
     m_Metadata:
       m_Items: []
   - m_Id: 71752800506257408
-    m_Localized: MEM. Optimizations
+    m_Localized: "\uBA54\uBAA8\uB9AC \uCD5C\uC801\uD654"
     m_Metadata:
       m_Items: []
   references:
