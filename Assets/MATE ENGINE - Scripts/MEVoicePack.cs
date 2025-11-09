@@ -283,14 +283,19 @@ public class MEVoicePack : MonoBehaviour
             if (dragStartClip.Count > 0 && h.dragStartSound)
             {
                 if (!_applied) _dragOriginals.Add((h.dragStartSound, h.dragStartSound.clip));
+                // Clears sounds list in case of existing objects 
                 h.dragStartSound.clip = dragStartClip[Random.Range(0, dragStartClip.Count)];
                 h.dragStartSound.playOnAwake = false;
+                h.dragStartSoundList.Clear();
+                h.dragStartSoundList = new List<AudioClip>(dragStartClip);
             }
             if (dragStopClip.Count > 0 && h.dragStopSound)
             {
                 if (!_applied) _dragOriginals.Add((h.dragStopSound, h.dragStopSound.clip));
                 h.dragStopSound.clip = dragStopClip[Random.Range(0, dragStopClip.Count)];
                 h.dragStopSound.playOnAwake = false;
+                h.dragStopSoundList.Clear();
+                h.dragStopSoundList = new List<AudioClip>(dragStopClip);
             }
         }
     }
