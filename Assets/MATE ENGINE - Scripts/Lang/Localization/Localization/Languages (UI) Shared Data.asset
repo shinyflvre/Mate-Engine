@@ -919,6 +919,22 @@ MonoBehaviour:
     m_Key: MC_INFO
     m_Metadata:
       m_Items: []
+  - m_Id: 78533177715499008
+    m_Key: CAT_TIMER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533281222533120
+    m_Key: START
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533283390988288
+    m_Key: STOP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533389917921280
+    m_Key: TOL_TIMER
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -899,38 +899,45 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71470101493227520
-    m_Localized: "Friday \u2013 pressing this button will activate the alarm on every
-      Friday. You can select additional days or keep it set to only Friday."
+    m_Localized: "Viernes \u2013 Al pulsar este bot\xF3n, la alarma se activar\xE1
+      todos los viernes. Puede seleccionar d\xEDas adicionales o dejarla configurada
+      solo para los viernes."
     m_Metadata:
       m_Items: []
   - m_Id: 71470100155244544
-    m_Localized: "Thursday \u2013 pressing this button will activate the alarm on
-      every Thursday. You can select additional days or keep it set to only Thursday."
+    m_Localized: "Jueves \u2013 Al pulsar este bot\xF3n, la alarma se activar\xE1
+      todos los mi\xE9rcoles. Puede seleccionar d\xEDas adicionales o dejarla configurada
+      solo para los jueves"
     m_Metadata:
       m_Items: []
   - m_Id: 71470098959867904
-    m_Localized: "Wednesday \u2013 pressing this button will activate the alarm on
-      every Wednesday. You can select additional days or keep it set to only Wednesday."
+    m_Localized: "Miercoles \u2013 Al pulsar este bot\xF3n, la alarma se activar\xE1
+      todos los mi\xE9rcoles. Puede seleccionar d\xEDas adicionales o dejarla configurada
+      solo para los mi\xE9rcoles."
     m_Metadata:
       m_Items: []
   - m_Id: 71470097592524800
-    m_Localized: "Tuesday \u2013 pressing this button will activate the alarm on
-      every Tuesday. You can select additional days or keep it set to only Tuesday."
+    m_Localized: "Martes \u2013 Al pulsar este bot\xF3n, la alarma se activar\xE1
+      todos los martes. Puede seleccionar d\xEDas adicionales o dejarla configurada
+      solo para los martes."
     m_Metadata:
       m_Items: []
   - m_Id: 71470095960940544
-    m_Localized: "Monday \u2013 pressing this button will activate the alarm on every
-      Monday. You can select additional days or keep it set to only Monday."
+    m_Localized: "Lunes \u2013 Al pulsar este bot\xF3n, la alarma se activar\xE1
+      todos los lunes. Puede seleccionar d\xEDas adicionales o dejarla configurada
+      solo para los lunes."
     m_Metadata:
       m_Items: []
   - m_Id: 71470109877641216
-    m_Localized: "Sunday \u2013 pressing this button will activate the alarm on every
-      Sunday. You can select additional days or keep it set to only Sunday."
+    m_Localized: "Domingo \u2013 Al pulsar este bot\xF3n, la alarma se activar\xE1
+      todos los viernes. Puede seleccionar d\xEDas adicionales o dejarla configurada
+      solo para los domingos."
     m_Metadata:
       m_Items: []
   - m_Id: 71470107461722112
-    m_Localized: "Saturday \u2013 pressing this button will activate the alarm on
-      every Saturday. You can select additional days or keep it set to only Saturday."
+    m_Localized: "Sabado \u2013 Al pulsar este bot\xF3n, la alarma se activar\xE1
+      todos los viernes. Puede seleccionar d\xEDas adicionales o dejarla configurada
+      solo para los sabados."
     m_Metadata:
       m_Items: []
   - m_Id: 71470682064592896
@@ -942,43 +949,43 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71751708213026816
-    m_Localized: Add New Alarm
+    m_Localized: "A\xF1adir nueva alarma"
     m_Metadata:
       m_Items: []
   - m_Id: 71751796721229824
-    m_Localized: Alarm
+    m_Localized: Alarma
     m_Metadata:
       m_Items: []
   - m_Id: 71751947594539008
-    m_Localized: MON.
+    m_Localized: LUN.
     m_Metadata:
       m_Items: []
   - m_Id: 71751949909794816
-    m_Localized: TUE.
+    m_Localized: MAR.
     m_Metadata:
       m_Items: []
   - m_Id: 71751951579127808
-    m_Localized: WED.
+    m_Localized: MIER.
     m_Metadata:
       m_Items: []
   - m_Id: 71751953068105728
-    m_Localized: THU.
+    m_Localized: JUE.
     m_Metadata:
       m_Items: []
   - m_Id: 71751954464808960
-    m_Localized: FRI.
+    m_Localized: VIER.
     m_Metadata:
       m_Items: []
   - m_Id: 71751955819569152
-    m_Localized: SAT.
+    m_Localized: SAB.
     m_Metadata:
       m_Items: []
   - m_Id: 71751956985585664
-    m_Localized: SUN.
+    m_Localized: DOM.
     m_Metadata:
       m_Items: []
   - m_Id: 71752554812317696
-    m_Localized: Windows Sitting Y Offset
+    m_Localized: Sentado en las ventanas Y desplazamientos
     m_Metadata:
       m_Items: []
   - m_Id: 71752669165821952
@@ -986,220 +993,227 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71752800506257408
-    m_Localized: MEM. Optimizations
+    m_Localized: OPMEM. Optimizacion de memoria
     m_Metadata:
       m_Items: []
   - m_Id: 74066854415474688
-    m_Localized: "Oh no\u2026 there\u2019s a <Entity> right next to you! Stay safe!"
+    m_Localized: "\xA1Oh no\u2026 hay una <Entidad> justo al lado tuyo! \xA1Mantente
+      a salvo!"
     m_Metadata:
       m_Items: []
   - m_Id: 74100562044428288
-    m_Localized: Oh, look! What a wonderful day!
+    m_Localized: "\xA1Oh, mira! \xA1Qu\xE9 d\xEDa tan maravilloso!"
     m_Metadata:
       m_Items: []
   - m_Id: 74100573499072512
-    m_Localized: "Oh, it\u2019s getting dark! Stay safe, o-okay?"
+    m_Localized: "\xA1Oh, est\xE1 oscureciendo! \xA1Cu\xEDdate, \xBFd-de acuerdo?"
     m_Metadata:
       m_Items: []
   - m_Id: 74100702608138240
-    m_Localized: Oh no! Please stay safe, your health is low!
+    m_Localized: "\xA1Oh, no! \xA1Por favor, cuidate, tus corazones estan bajos!"
     m_Metadata:
       m_Items: []
   - m_Id: 74100749752115200
-    m_Localized: "Cutie, don\u2019t forget to eat! You look so hungry >_<"
+    m_Localized: "\xA1Cari\xF1o, no te olvides de comer! \xA1Tienes mucha hambre!
+      >_<"
     m_Metadata:
       m_Items: []
   - m_Id: 74137876288282624
-    m_Localized: 'This enables cross-interaction between MateEngine and Minecraft.
-      When activated, it shows cute messages during key moments: when day or night
-      begins, when a dangerous mob is nearby, when your health or hunger is low,
-      when you craft something, die, the weather changes, or you go to sleep. To
-      use this feature, install the Minecraft mod for Forge. Currently supported
-      version: Minecraft 1.21.10. You can download the mod using the CurseForge launcher
-      or by clicking the Download button.'
+    m_Localized: "Esto permite la interacci\xF3n entre MateEngine y Minecraft. Al
+      activarlo, muestra mensajes divertidos en momentos clave: al amanecer o al
+      anochecer, cuando hay una criatura peligrosa cerca, cuando tu salud o hambre
+      est\xE1n bajas, al crear objetos, al morir, al cambiar el clima o al irte a
+      dormir. Para usar esta funci\xF3n, instala el mod de Minecraft para Forge.
+      Versi\xF3n compatible: Minecraft 1.21.10. Puedes descargar el mod usando el
+      lanzador de CurseForge o haciendo clic en el bot\xF3n Descargar."
     m_Metadata:
       m_Items: []
   - m_Id: 74149153014325248
-    m_Localized: "Oh no... you died! It\u2019s okay, everything will be alright."
+    m_Localized: "\xA1Oh no... has muerto! Tranqui, todo estar\xE1 bien."
     m_Metadata:
       m_Items: []
   - m_Id: 74149154457165824
-    m_Localized: "Look, it\u2019s raining! Whoa!"
+    m_Localized: "\xA1Mira, est\xE1 lloviendo! \xA1Guau!"
     m_Metadata:
       m_Items: []
   - m_Id: 74149155774177280
-    m_Localized: "Hey, you\u2019re drowning! Get some air, please!"
+    m_Localized: "\xA1Oye, te est\xE1s ahogando! \xA1Toma aire, por favor!"
     m_Metadata:
       m_Items: []
   - m_Id: 74149157028274176
-    m_Localized: Sleepy time! Time for bed. Good night <3
+    m_Localized: "\xA1Hora de dormir! A la cama. Buenas noches <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74149158324314112
-    m_Localized: Whoa, what did you just craft here?
+    m_Localized: "\xA1Guau! \xBFQu\xE9 acabas de craftear?"
     m_Metadata:
       m_Items: []
   - m_Id: 74429045333336064
-    m_Localized: Sync Mode enables dance synchronization across all MateEngine instances.
-      When activated, all avatars on your monitor will perform the same dance in
-      perfect sync. Make sure to launch the other instances from the main instance,
-      otherwise synchronization will not work.
+    m_Localized: "El modo de sincronizaci\xF3n permite sincronizar el baile en todas
+      las instancias de MateEngine. Al activarlo, todos los avatares en tu monitor
+      realizar\xE1n el mismo baile en perfecta sincron\xEDa. Aseg\xFArate de iniciar
+      las dem\xE1s instancias desde la principal; de lo contrario, la sincronizaci\xF3n
+      no funcionar\xE1."
     m_Metadata:
       m_Items: []
   - m_Id: 74429046658736128
-    m_Localized: "Lock Mode (Experimental) adds camera tracking to dances. Some dance
-      files include large left or right movements that can move the avatar outside
-      the visible play space. Enabling Lock Mode makes the engine window follow the
-      avatar\u2019s motion, preventing it from moving out of bounds."
+    m_Localized: "El Modo Bloqueo (Experimental) a\xF1ade seguimiento de c\xE1mara
+      a los bailes. Algunos archivos de baile incluyen movimientos amplios hacia
+      la izquierda o la derecha que pueden sacar al avatar del \xE1rea visible. Al
+      activar el Modo Bloqueo, la ventana del motor sigue el movimiento del avatar,
+      impidiendo que se salga de los l\xEDmites."
     m_Metadata:
       m_Items: []
   - m_Id: 74473517958078464
-    m_Localized: Yay!! Some food! Yummy!! ^-^
+    m_Localized: "\xA1\xA1S\xED!! \xA1Algo de comida! \xA1Qu\xE9 rico! ^-^"
     m_Metadata:
       m_Items: []
   - m_Id: 74473519275089920
-    m_Localized: Woah!! What a fight!!
+    m_Localized: "\xA1\xA1Guau!! \xA1\xA1Qu\xE9 pelea!!"
     m_Metadata:
       m_Items: []
   - m_Id: 74473520520798208
-    m_Localized: Mmh.. I think this is... oh right! This is a <biome>!!
+    m_Localized: "Mmmh... creo que esto es... \xA1ah, claro! \xA1Esto es un <biome>!"
     m_Metadata:
       m_Items: []
   - m_Id: 74494164503404544
-    m_Localized: Mhh! Yummyy!! I hope it tasted good! <3
+    m_Localized: "\xA1Mmm! \xA1Qu\xE9 rico! \xA1Espero que haya estado bueno! <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74494166046908416
-    m_Localized: I love food!! Give me some too!
+    m_Localized: "\xA1Me encanta la comida! \xA1Dame un poco tambi\xE9n!"
     m_Metadata:
       m_Items: []
   - m_Id: 74494167372308480
-    m_Localized: I can imagine! It was tasty, right? <3
+    m_Localized: "\xA1Me imagino que estaba rico! \xBFverdad? <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74494450139701248
-    m_Localized: Woah! We are now in <biome>! Amazing! <3
+    m_Localized: "\xA1Guau! \xA1Estamos en <biome>! \xA1Incre\xEDble! <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74494451326689280
-    m_Localized: Weee! <biome> is such a cool place, right? :D <3
+    m_Localized: "\xA1Guau! <biome> es un lugar genial, \xBFverdad? :D <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74494452492705792
-    m_Localized: "I-I know this place! It\u2019s <biome>, right??"
+    m_Localized: "\xA1Conozco este lugar! Es <biome>, \xBFverdad?"
     m_Metadata:
       m_Items: []
   - m_Id: 74495033496084480
-    m_Localized: "Ohh!.. You\u2019re so good!! I\u2019m glad you\u2019re so strong!
+    m_Localized: "\xA1Oh! \xA1Eres tan bueno! \xA1Me alegra que seas tan fuerte!
       <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74495035303829504
-    m_Localized: Whoops! Looks like something died here! ^-^
+    m_Localized: "\xA1Ups! \xA1Parece que algo muri\xF3 aqu\xED! ^-^"
     m_Metadata:
       m_Items: []
   - m_Id: 74495036486623232
-    m_Localized: "Amazing! You\u2019re so good at Minecraft!"
+    m_Localized: "\xA1Incre\xEDble! \xA1Eres buen\xEDsimo en Minecraft!"
     m_Metadata:
       m_Items: []
   - m_Id: 74495491606355968
-    m_Localized: Ohh.. What are you crafting?
+    m_Localized: "Ohh... \xBFQu\xE9 est\xE1s crafteando?"
     m_Metadata:
       m_Items: []
   - m_Id: 74495493175025664
-    m_Localized: Ohh.. What are you crafting?
+    m_Localized: "Ohh... \xBFQu\xE9 est\xE1s crafteando?"
     m_Metadata:
       m_Items: []
   - m_Id: 74495494441705472
-    m_Localized: 'What are we crafting here..? o:'
+    m_Localized: "\xBFQu\xE9 estamos crafteando aqu\xED...? o:"
     m_Metadata:
       m_Items: []
   - m_Id: 74496053102026752
-    m_Localized: Oh.. Sometimes I really love the rain, you know? It can be so calming!
-      <3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 74496054406455296
-    m_Localized: "It\u2019s raining, it\u2019s raining, it\u2019s raining!!"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 74496454551445504
-    m_Localized: "Ohh! Take care, there\u2019s a <entity>!"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 74496467176300544
-    m_Localized: <entity> right next to you! T-take care!! <3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 74496470120701952
-    m_Localized: "Mhh.. I think there\u2019s a <entity>! Stay safe!"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 74496470980534272
-    m_Localized: <entity>!! Oh no!!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 74497067465089024
-    m_Localized: "Ohh, I\u2019m very eepy too!! Let\u2019s have a power nap and cuddle
-      up!! <3"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 74497074909978624
-    m_Localized: "Good night! Tomorrow will be a big day for you, okay? Promise me
-      you\u2019ll sleep! ^-^"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 74497077372035072
-    m_Localized: Nighty night! Sleep well!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 74497599856484352
-    m_Localized: "Ohhh no...!! >_< I-It\u2019s okay! You\u2019re not playing on hardcore
-      mode, r-right?? Y-You can just respawn..! Right?"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 74497601844584448
-    m_Localized: "Okay, don\u2019t worry! Time to respawn and get that loot back!
+    m_Localized: "\xA1Ay! A veces me encanta la lluvia, \xBFsabes? \xA1Es tan relajante!
       <3"
     m_Metadata:
       m_Items: []
+  - m_Id: 74496054406455296
+    m_Localized: "\xA1Est\xE1 lloviendo, est\xE1 lloviendo, est\xE1 lloviendo!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74496454551445504
+    m_Localized: "\xA1Oh! \xA1Cuidado, hay una <entity>!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74496467176300544
+    m_Localized: "<entity> \xA1Justo al lado tuyo! \xA1Cu\xEDdate! <3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74496470120701952
+    m_Localized: "Mmm... \xA1Creo que hay una <entity>! \xA1Cu\xEDdate!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74496470980534272
+    m_Localized: <entity>!! O no!!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74497067465089024
+    m_Localized: "\xA1Ay, yo tambi\xE9n estoy muy somnolienta! \xA1Vamos a echarnos
+      una siesta y acurrucarnos! <3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74497074909978624
+    m_Localized: "\xA1Buenas noches! Ma\xF1ana ser\xE1 un d\xEDa importante para
+      ti, \xBFde acuerdo? \xA1Prom\xE9teme que dormir\xE1s! ^-^"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74497077372035072
+    m_Localized: "\xA1Buenas noches! \xA1Que duermas bien!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74497599856484352
+    m_Localized: "\xA1Oh, no...! >_< \xA1E-Est\xE1 bien! No est\xE1s jugando en modo
+      extremo, \xBFverdad? \xA1P-Puedes reaparecer...! \xBFVerdad?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74497601844584448
+    m_Localized: "\xA1Vale, no te preocupes! \xA1Es hora de reaparecer y recuperar
+      el inventario! <3"
+    m_Metadata:
+      m_Items: []
   - m_Id: 74497603958513664
-    m_Localized: If you die, I die too!! >_< <3
+    m_Localized: "\xA1Si t\xFA mueres, yo tambi\xE9n! >_< <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74498198488522752
-    m_Localized: Mhhh.. What are our plans today? We could visit some new biomes
-      and go on a journey! Or maybe build something!
+    m_Localized: "Mmm... \xBFQu\xE9 planes tenemos para hoy? \xA1Podr\xEDamos visitar
+      nuevos biomas y emprender una aventura! \xA1O tal vez construir algo!"
     m_Metadata:
       m_Items: []
   - m_Id: 74498199964917760
-    m_Localized: I love Minecraft so much! <3 Watching you play is so fun! Yippee!
+    m_Localized: "\xA1Me encanta Minecraft! <3 \xA1Verte jugar es divertid\xEDsimo!
+      \xA1Yupi!"
     m_Metadata:
       m_Items: []
   - m_Id: 74498200799584256
-    m_Localized: "We should definitely get a cute dog!! Let\u2019s tame one! <3"
+    m_Localized: "\xA1Definitivamente deber\xEDamos tener un perro lindo! \xA1Vamos
+      a domesticar uno! <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74499007469101056
-    m_Localized: "Take care! You have low health\u2026 eat something!"
+    m_Localized: "\xA1Cu\xEDdate! Tus corazones estan bajos\u2026 \xA1come algo!"
     m_Metadata:
       m_Items: []
   - m_Id: 74499008760946688
-    m_Localized: "Oh no.. please d-don\u2019t die </3"
+    m_Localized: "\xA1Oh no... por favor, no te mueras! </3"
     m_Metadata:
       m_Items: []
   - m_Id: 74499009935351808
-    m_Localized: "It\u2019s all good! We can survive, don\u2019t worry! We need food
-      or, ehh, heal potions! Or a golden apple!"
+    m_Localized: "\xA1Todo bien! \xA1Podemos sobrevivir, no te preocupes! Necesitamos
+      comida o, ehh, \xA1pociones curativas! \xA1O una manzana dorada!"
     m_Metadata:
       m_Items: []
   - m_Id: 74499492481638400
-    m_Localized: What do you like more? The night or the day? I love the night the
-      most! Wonderful stars! But I hate all the mobs at night >_< <33
+    m_Localized: "\xBFQu\xE9 te gusta m\xE1s? \xBFLa noche o el d\xEDa? \xA1A m\xED
+      me encanta la noche! \xA1Qu\xE9 estrellas tan maravillosas! Pero odio a todos
+      los mobs que hay por la noche >_< <33"
     m_Metadata:
       m_Items: []
   - m_Id: 74499493685403648
-    m_Localized: Is it getting dark?? We should be careful!
+    m_Localized: "\xBFEst\xE1 oscureciendo? \xA1Debemos tener cuidado!"
     m_Metadata:
       m_Items: []
   - m_Id: 74499494822060032
@@ -1207,42 +1221,43 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74500969312854016
-    m_Localized: "Don\u2019t stare at endermen! They\u2019re shy but super scary
-      when mad!! >_<"
+    m_Localized: "\xA1No mires fijamente a los endermen! Son t\xEDmidos, \xA1pero
+      dan much\xEDsimo miedo cuando se enfadan! >_<"
     m_Metadata:
       m_Items: []
   - m_Id: 74500970667614208
-    m_Localized: "Never dig straight down! Or you\u2019ll fall like \u201Cweeee\u2014AAAH!!\u201D
-      into lava! >_<"
+    m_Localized: "\xA1Nunca caves hacia abajo! \xA1O caer\xE1s como un \"\xA1\xA1\xA1Uuuuh!!!
+      \xA1\xA1\xA1AAAH!!!\" en la lava! >_<"
     m_Metadata:
       m_Items: []
   - m_Id: 74500972060123136
-    m_Localized: Always bring extra tools! You never know when your pickaxe goes
-      crack! and breaks!
+    m_Localized: "\xA1Lleva siempre herramientas de repuesto! \xA1Nunca sabes cu\xE1ndo
+      se te va a romper el pico!"
     m_Metadata:
       m_Items: []
   - m_Id: 74500973540712448
-    m_Localized: Keep some food with you, okay? No hungry adventures allowed! Nom
-      nom <3
+    m_Localized: "\xA1Lleva algo de comida contigo, \xBFvale?! \xA1Nada de aventuras
+      con hambre! \xD1am \xF1am <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74501548428795904
-    m_Localized: "Mhh.. your tummy\u2019s rumbling again, isn\u2019t it? Hehe~ time
-      for nom noms! <3"
+    m_Localized: "Mmm... \xBFte ruge el est\xF3mago otra vez, verdad? Jeje~ \xA1Hora
+      de comer! <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74501549779361792
-    m_Localized: "Oi oi!! Eat something before you faint! We can\u2019t fight on
-      an empty stomach >_<"
+    m_Localized: "\xA1Oye, oye! \xA1Come algo antes de desmayarte! \xA1No podemos
+      luchar con el est\xF3mago vac\xEDo! >_<"
     m_Metadata:
       m_Items: []
   - m_Id: 74501550978932736
-    m_Localized: "Eeeh~ you\u2019re hungry again!? Let\u2019s grab something tasty,
-      pleaaase! ^-^"
+    m_Localized: "\xA1\xBFEeeh~ tienes hambre otra vez?! \xA1Vamos a comer algo rico,
+      por favor! ^-^"
     m_Metadata:
       m_Items: []
   - m_Id: 74501552463716352
-    m_Localized: Huh!? Your hunger bar is low!! Quick, food time! Munch munch <3
+    m_Localized: "\xA1\xBFEh?! \xA1Tu barra de hambre est\xE1 baja! \xA1R\xE1pido,
+      a comer! \xA1\xD1am \xF1am! <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74780049190985728
@@ -1270,6 +1285,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 74780051216834560
     m_Localized: Minecraft Integration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533177715499008
+    m_Localized: Timer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533281222533120
+    m_Localized: Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533283390988288
+    m_Localized: Stop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533389917921280
+    m_Localized: "This is the timer function. You can set a timer for up to 24 hours
+      and 59 minutes. You can also enter custom text to label your timer, so you
+      know what it\u2019s for. For example, set it to 15 minutes and add a note to
+      remind yourself when your pizza is ready. After the timer ends, you can reuse
+      it anytime."
     m_Metadata:
       m_Items: []
   references:

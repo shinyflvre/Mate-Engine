@@ -30914,7 +30914,7 @@ Light:
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 1, g: 0.26999998, b: 0.96203995, a: 1}
-  m_Intensity: 5.554969e-29
+  m_Intensity: 5.1937925e-29
   m_Range: 0.5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -55485,8 +55485,8 @@ MonoBehaviour:
   m_FillRect: {fileID: 1191756869}
   m_HandleRect: {fileID: 866623830}
   m_Direction: 0
-  m_MinValue: -0.025
-  m_MaxValue: 0.025
+  m_MinValue: -0.05
+  m_MaxValue: 0.05
   m_WholeNumbers: 0
   m_Value: 0
   m_OnValueChanged:
@@ -72353,7 +72353,7 @@ Light:
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 0, g: 0.44799995, b: 1, a: 1}
-  m_Intensity: 1.1109938e-28
+  m_Intensity: 1.0387585e-28
   m_Range: 1
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -95418,7 +95418,7 @@ Light:
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 0, g: 0.44799995, b: 1, a: 1}
-  m_Intensity: 8.332453e-29
+  m_Intensity: 7.790689e-29
   m_Range: 1
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -250128,7 +250128,7 @@ MonoBehaviour:
     groupID: ambi_lights
     exclusiveTags:
     - lights
-    fadeCurrentValue: 2.7774844e-29
+    fadeCurrentValue: 2.5968963e-29
     fadeTarget: 0
     isFading: 1
     hasYSet: 0
@@ -250152,7 +250152,7 @@ MonoBehaviour:
     groupID: ambi_lights
     exclusiveTags:
     - lights
-    fadeCurrentValue: 2.7774844e-29
+    fadeCurrentValue: 2.5968963e-29
     fadeTarget: 0
     isFading: 1
     hasYSet: 0
@@ -250176,7 +250176,7 @@ MonoBehaviour:
     groupID: ambi_lights
     exclusiveTags:
     - lights
-    fadeCurrentValue: 2.7774844e-29
+    fadeCurrentValue: 2.5968963e-29
     fadeTarget: 0
     isFading: 1
     hasYSet: 0
@@ -278361,7 +278361,7 @@ MonoBehaviour:
   - isSitting
   totalWindowSitAnimations: 13
   seatOffsetPx: 0
-  windowSitYOffset: 0.003193003
+  windowSitYOffset: 0
   occluderMaterial: {fileID: 2100000, guid: 49dc03a14517a5f419fd1950a2c700d7, type: 2}
   targetCamera: {fileID: 330585545}
   targetQuadZOffset: 3.2

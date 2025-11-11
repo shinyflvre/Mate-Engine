@@ -83,6 +83,8 @@ providers = {
 objectSelectors = {
 }
 recentSearches = [
+	"st: timer"
+	"st: start"
 	"st: steam"
 	"st: sdat."
 	"st: offset"
@@ -101,7 +103,6 @@ recentSearches = [
 	"st: INPUT_AI_SYSTEM_PROMP"
 	"st: INPUT_AI_SYSTEM_PROMPT"
 	"st: LIGHT:_"
-	"st: LIGHT_"
 ]
 searchItemFavorites = [
 ]

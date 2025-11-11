@@ -1231,7 +1231,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74495493175025664
-    m_Localized: Ohh.. What are you crafting?
+    m_Localized: "\uC624\uC624\u2026 \uBB58 \uB9CC\uB4E4\uACE0 \uC788\uB294 \uAC70\uC57C?"
     m_Metadata:
       m_Items: []
   - m_Id: 74495494441705472
@@ -1414,6 +1414,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 74780051216834560
     m_Localized: Minecraft Integration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533177715499008
+    m_Localized: Timer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533281222533120
+    m_Localized: Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533283390988288
+    m_Localized: Stop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533389917921280
+    m_Localized: "This is the timer function. You can set a timer for up to 24 hours
+      and 59 minutes. You can also enter custom text to label your timer, so you
+      know what it\u2019s for. For example, set it to 15 minutes and add a note to
+      remind yourself when your pizza is ready. After the timer ends, you can reuse
+      it anytime."
     m_Metadata:
       m_Items: []
   references:

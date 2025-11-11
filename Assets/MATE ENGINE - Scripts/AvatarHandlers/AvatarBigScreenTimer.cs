@@ -72,6 +72,8 @@ public class AvatarBigScreenTimer : MonoBehaviour
     [StructLayout(LayoutKind.Sequential)]
     public struct POINT { public int X; public int Y; }
 
+    private readonly Queue<string> pendingEvents = new Queue<string>();
+
     void Start()
     {
         bigScreenHandler = GetComponent<AvatarBigScreenHandler>();
@@ -105,23 +107,11 @@ public class AvatarBigScreenTimer : MonoBehaviour
             a.lastTriggeredUnixMinute = unixMin;
             SaveLoadHandler.Instance.SaveToDisk();
 
-            alarmText = string.IsNullOrEmpty(a.text) ? "Alarm" : a.text;
+            a.lastTriggeredUnixMinute = unixMin;
+            SaveLoadHandler.Instance.SaveToDisk();
+            EnqueueOrTrigger(string.IsNullOrEmpty(a.text) ? "Alarm" : a.text);
+            inspectorEvent = "Alarm queued";
 
-            if (avatarAnimator != null)
-            {
-                avatarAnimator.SetBool("isBigScreenSaver", false);
-                avatarAnimator.SetBool("isBigScreen", true);
-                avatarAnimator.SetBool("isBigScreenAlarm", true);
-                avatarAnimator.SetBool("isWindowSit", false);
-                avatarAnimator.SetBool("isSitting", false);
-            }
-
-            if (bigScreenHandler != null) bigScreenHandler.SendMessage("ActivateBigScreen");
-            PlayRandomAlarm();
-            alarmActive = true;
-            alarmInputBlockUntil = Time.time + alarmInputBlockDuration;
-            inspectorEvent = "Alarm triggered";
-            StartCoroutine(ShowAlarmBubbleStreamedDelayed());
         }
     }
 
@@ -151,6 +141,7 @@ public class AvatarBigScreenTimer : MonoBehaviour
         }
 
         CheckMultiAlarms();
+        CheckTimers();
 
         bool isBigScreen = avatarAnimator != null && avatarAnimator.GetBool("isBigScreen");
         bool isBigScreenAlarm = avatarAnimator != null && avatarAnimator.GetBool("isBigScreenAlarm");
@@ -176,6 +167,15 @@ public class AvatarBigScreenTimer : MonoBehaviour
                     avatarAnimator.SetBool("isBigScreen", false);
                     if (bigScreenHandler != null) bigScreenHandler.SendMessage("DeactivateBigScreen");
                 }
+
+                if (pendingEvents.Count > 0)
+                {
+                    var nextText = pendingEvents.Dequeue();
+                    alarmText = nextText;
+                    TriggerAlarmNow();
+                    return;
+                }
+
                 RemoveAlarmBubble();
             }
         }
@@ -201,6 +201,7 @@ public class AvatarBigScreenTimer : MonoBehaviour
         if (audioSource != null && audioSource.isPlaying)
             audioSource.Stop();
         RemoveAlarmBubble();
+        pendingEvents.Clear();
     }
 
     bool IsInAllowedState()
@@ -353,6 +354,37 @@ public class AvatarBigScreenTimer : MonoBehaviour
         if (best != null) nextTime = bestTime;
         return best;
     }
+
+    void EnqueueOrTrigger(string text)
+    {
+        if (alarmActive) { pendingEvents.Enqueue(string.IsNullOrEmpty(text) ? "Alarm" : text); return; }
+        alarmText = string.IsNullOrEmpty(text) ? "Alarm" : text;
+        TriggerAlarmNow();
+    }
+
+    void CheckTimers()
+    {
+        var d = SaveLoadHandler.Instance?.data;
+        if (d == null) return;
+        if (!d.alarmsEnabled) return;
+        if (d.timers == null || d.timers.Count == 0) return;
+        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        for (int i = 0; i < d.timers.Count; i++)
+        {
+            var t = d.timers[i];
+            if (t == null) continue;
+            if (!t.enabled) continue;
+            if (!t.running) continue;
+            if (t.targetUnix <= 0) continue;
+            if (now < t.targetUnix) continue;
+            t.running = false;
+            t.targetUnix = 0;
+            SaveLoadHandler.Instance.SaveToDisk();
+            var txt = string.IsNullOrEmpty(t.text) ? "Timer" : t.text;
+            EnqueueOrTrigger(txt);
+        }
+    }
+
 
     DateTime ComputeNextTime(SaveLoadHandler.SettingsData.AlarmEntry a, DateTime now)
     {

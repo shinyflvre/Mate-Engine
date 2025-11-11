@@ -118,7 +118,7 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FillColor: {r: 0.11999995, g: 0.11999995, b: 0.19999996, a: 1}
     - _GlassTint: {r: 1, g: 1, b: 1, a: 0.35}
-    - _MainColor: {r: 0.24201983, g: 0.25008783, b: 0.276981, a: 1}
+    - _MainColor: {r: 0.24201941, g: 0.25008738, b: 0.27698058, a: 1}
     - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _OverlayColor: {r: 0, g: 0.5839126, b: 0.7924528, a: 1}
     - _OverlayOffset: {r: 0, g: 0, b: 0, a: 0}

@@ -191,10 +191,28 @@ public class SaveLoadHandler : MonoBehaviour
 
         public List<AlarmEntry> alarms = new List<AlarmEntry>();
 
+        //Timer
+        [Serializable]
+        public class TimerEntry
+        {
+            public string id;
+            public bool enabled;
+            public int hours;
+            public int minutes;
+            public int presetSeconds;
+            public bool running;
+            public long targetUnix;
+            public string text;
+        }
+
+        public List<TimerEntry> timers = new List<TimerEntry>();
+
+
     }
     //ALARM
     void MigrateAfterLoad()
     {
+        if (data.timers == null) data.timers = new List<SettingsData.TimerEntry>();
         if (string.IsNullOrEmpty(data.selectedParticleTheme)) data.selectedParticleTheme = "Standard";
         if (data == null) data = new SettingsData();
         if (data.alarms == null) data.alarms = new List<SettingsData.AlarmEntry>();

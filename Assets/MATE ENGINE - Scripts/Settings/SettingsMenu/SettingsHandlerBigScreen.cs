@@ -27,7 +27,17 @@ public class SettingsHandlerBigScreen : MonoBehaviour
     public InputField templateAlarmText;
     public Button templateRemove;
 
+    public GameObject timerItemTemplate;
+    public Button addTimerButton;
 
+    [Header("TimerItem Template Refs")]
+    public TMP_Dropdown templateTimerHours;
+    public TMP_Dropdown templateTimerMinutes;
+    public InputField templateTimerText;
+    public TMP_Text templateTimerCountdown;
+    public Button templateTimerStart;
+    public Button templateTimerStop;
+    public Button templateTimerRemove;
 
     private static readonly string[] TimeoutLabels = {
         "30s", "1 min", "5 min", "15 min", "30 min", "45 min", "1 h", "1.5 h", "2 h", "2.5 h", "3 h"
@@ -38,7 +48,9 @@ public class SettingsHandlerBigScreen : MonoBehaviour
         SetupListeners();
         LoadSettings();
         if (addAlarmButton != null) addAlarmButton.onClick.AddListener(OnAddAlarm);
+        if (addTimerButton != null) addTimerButton.onClick.AddListener(OnAddTimer);
         BuildAlarmsUI();
+        BuildTimersUI();
     }
 
 
@@ -46,11 +58,12 @@ public class SettingsHandlerBigScreen : MonoBehaviour
     {
         if (alarmsContent == null || alarmItemTemplate == null) return;
         EnsureTemplateDropdowns();
-
-        for (int i = 0; i < alarmsContent.childCount; i++)
+        for (int i = alarmsContent.childCount - 1; i >= 0; i--)
         {
-            var c = alarmsContent.GetChild(i).gameObject;
-            if (c.activeSelf) Destroy(c);
+            var go = alarmsContent.GetChild(i).gameObject;
+            if (!go.activeSelf) continue;
+            if (CloneGet<TMP_Text>(go, templateTimerCountdown) != null) continue;
+            Destroy(go);
         }
 
         var d = SaveLoadHandler.Instance.data;
@@ -71,10 +84,137 @@ public class SettingsHandlerBigScreen : MonoBehaviour
         return string.Join("/", stack);
     }
 
+    class TimerRow
+    {
+        public SaveLoadHandler.SettingsData.TimerEntry e;
+        public TMP_Text countdown;
+        public TMP_Dropdown hours;
+        public TMP_Dropdown minutes;
+        public InputField text;
+        public Button start;
+        public Button stop;
+        public Button remove;
+        public GameObject go;
+    }
+
+    List<TimerRow> timerRows = new List<TimerRow>();
+
+    void Update()
+    {
+        UpdateTimerLabels();
+    }
+
+    void UpdateTimerLabels()
+    {
+        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        foreach (var r in timerRows)
+        {
+            if (r == null || r.e == null || r.countdown == null) continue;
+            long sec = 0;
+            if (r.e.running && r.e.targetUnix > 0) sec = Math.Max(0, r.e.targetUnix - now);
+            else sec = r.e.presetSeconds;
+            int hh = (int)(sec / 3600);
+            int mm = (int)((sec % 3600) / 60);
+            int ss = (int)(sec % 60);
+            r.countdown.text = $"{hh:00}:{mm:00}:{ss:00}";
+        }
+    }
+
+    void BuildTimersUI()
+    {
+        if (alarmsContent == null || timerItemTemplate == null) return;
+        EnsureTimerDropdowns();
+        foreach (var r in timerRows) if (r.go) Destroy(r.go);
+        timerRows.Clear();
+        var d = SaveLoadHandler.Instance.data;
+        if (d.timers == null) d.timers = new List<SaveLoadHandler.SettingsData.TimerEntry>();
+        foreach (var e in d.timers) AddTimerRow(e);
+    }
+
+    void AddTimerRow(SaveLoadHandler.SettingsData.TimerEntry e)
+    {
+        var go = Instantiate(timerItemTemplate, alarmsContent);
+        go.SetActive(true);
+        var row = new TimerRow
+        {
+            e = e,
+            go = go,
+            hours = CloneGet<TMP_Dropdown>(go, templateTimerHours),
+            minutes = CloneGet<TMP_Dropdown>(go, templateTimerMinutes),
+            text = CloneGet<InputField>(go, templateTimerText),
+            countdown = CloneGet<TMP_Text>(go, templateTimerCountdown),
+            start = CloneGet<Button>(go, templateTimerStart),
+            stop = CloneGet<Button>(go, templateTimerStop),
+            remove = CloneGet<Button>(go, templateTimerRemove)
+        };
+
+        if (row.hours != null) row.hours.SetValueWithoutNotify(Mathf.Clamp(e.hours, 0, 24));
+        if (row.minutes != null) row.minutes.SetValueWithoutNotify(Mathf.Clamp(e.minutes, 0, 59));
+        if (row.text != null) row.text.SetTextWithoutNotify(e.text ?? "");
+
+        if (row.hours != null) row.hours.onValueChanged.AddListener(v => { e.hours = v; e.presetSeconds = e.hours * 3600 + e.minutes * 60; SaveLoadHandler.Instance.SaveToDisk(); });
+        if (row.minutes != null) row.minutes.onValueChanged.AddListener(v => { e.minutes = v; e.presetSeconds = e.hours * 3600 + e.minutes * 60; SaveLoadHandler.Instance.SaveToDisk(); });
+        if (row.text != null) row.text.onEndEdit.AddListener(v => { e.text = v ?? ""; SaveLoadHandler.Instance.SaveToDisk(); });
+
+        if (row.start != null) row.start.onClick.AddListener(() =>
+        {
+            e.enabled = true;
+            e.presetSeconds = e.hours * 3600 + e.minutes * 60;
+            if (e.presetSeconds <= 0) return;
+            e.running = true;
+            e.targetUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + e.presetSeconds;
+            SaveLoadHandler.Instance.SaveToDisk();
+        });
+
+        if (row.stop != null) row.stop.onClick.AddListener(() =>
+        {
+            e.running = false;
+            e.targetUnix = 0;
+            SaveLoadHandler.Instance.SaveToDisk();
+        });
+
+        if (row.remove != null) row.remove.onClick.AddListener(() =>
+        {
+            SaveLoadHandler.Instance.data.timers.Remove(e);
+            if (row.go) Destroy(row.go);
+            SaveLoadHandler.Instance.SaveToDisk();
+        });
+
+        timerRows.Add(row);
+    }
+
+    void OnAddTimer()
+    {
+        var e = new SaveLoadHandler.SettingsData.TimerEntry
+        {
+            id = System.Guid.NewGuid().ToString("N"),
+            enabled = true,
+            hours = 0,
+            minutes = 5,
+            presetSeconds = 300,
+            running = false,
+            targetUnix = 0,
+            text = "Timer"
+        };
+        var d = SaveLoadHandler.Instance.data;
+        if (d.timers == null) d.timers = new List<SaveLoadHandler.SettingsData.TimerEntry>();
+        d.timers.Add(e);
+        SaveLoadHandler.Instance.SaveToDisk();
+        AddTimerRow(e);
+    }
     T CloneGet<T>(GameObject clone, Component templateComp) where T : Component
     {
         if (templateComp == null) return null;
-        var rel = GetRelativePath(alarmItemTemplate.transform, templateComp.transform);
+
+        Transform root = null;
+        if (alarmItemTemplate != null && templateComp.transform.IsChildOf(alarmItemTemplate.transform))
+            root = alarmItemTemplate.transform;
+        else if (timerItemTemplate != null && templateComp.transform.IsChildOf(timerItemTemplate.transform))
+            root = timerItemTemplate.transform;
+
+        if (root == null) return null;
+
+        var rel = GetRelativePath(root, templateComp.transform);
         var tr = clone.transform.Find(rel);
         return tr ? tr.GetComponent<T>() : null;
     }
@@ -96,7 +236,23 @@ public class SettingsHandlerBigScreen : MonoBehaviour
             templateMinutes.AddOptions(mins);
         }
     }
-
+    void EnsureTimerDropdowns()
+    {
+        if (templateTimerHours != null && templateTimerHours.options.Count != 25)
+        {
+            templateTimerHours.ClearOptions();
+            var h = new List<string>();
+            for (int i = 0; i <= 24; i++) h.Add(i.ToString("D2"));
+            templateTimerHours.AddOptions(h);
+        }
+        if (templateTimerMinutes != null && templateTimerMinutes.options.Count != 60)
+        {
+            templateTimerMinutes.ClearOptions();
+            var m = new List<string>();
+            for (int i = 0; i < 60; i++) m.Add(i.ToString("D2"));
+            templateTimerMinutes.AddOptions(m);
+        }
+    }
 
     void AddRow(SaveLoadHandler.SettingsData.AlarmEntry e)
     {

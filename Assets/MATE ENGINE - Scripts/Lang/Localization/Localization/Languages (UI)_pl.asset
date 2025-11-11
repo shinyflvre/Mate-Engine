@@ -773,7 +773,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569555
-    m_Localized: Poprzedni
+    m_Localized: "Wr\xF3\u0107"
     m_Metadata:
       m_Items: []
   - m_Id: 71028682261569556
@@ -958,9 +958,9 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 71470682064592896
     m_Localized: "To jest funkcja budzika. Po lewej mo\u017Cesz ustawi\u0107 godziny
-      (Wy\u015Bwietlane  w formacie 12- i 24-godzinnym). Po prawej mo\u017Cesz ustawi\u0107
+      (Wy\u015Bwietlane w formacie 12- i 24-godzinnym). Po prawej mo\u017Cesz ustawi\u0107
       minuty. Mo\u017Cesz te\u017C wybra\u0107 dni, w kt\xF3re alarm ma dzwoni\u0107.
-      Je\u017Celi \u017Cadne nie zostan\u0105 wybrane, alarm b\u0119dzie dzwoni\u0142
+      Je\u017Celi \u017Cadne dni nie zostan\u0105 wybrane, alarm b\u0119dzie dzwoni\u0142
       codziennie o wyznaczonej godzinie. Aby dzwoni\u0142 w wybrane dni, zaznacz
       te konkretne dni."
     m_Metadata:
@@ -1002,7 +1002,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71752554812317696
-    m_Localized: Pozycja siedzenia na oknie Y
+    m_Localized: Pozycja Y siedzenia na oknie
     m_Metadata:
       m_Items: []
   - m_Id: 71752669165821952
@@ -1010,7 +1010,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 71752800506257408
-    m_Localized: "Omptymalizajca Pami\u0119ci"
+    m_Localized: "Optymalizacja Pami\u0119ci"
     m_Metadata:
       m_Items: []
   - m_Id: 74066854415474688
@@ -1031,7 +1031,7 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 74100749752115200
     m_Localized: "S\u0142oneczko, pami\u0119taj, \u017Ceby co\u015B zje\u015B\u0107!
-      Wygl\u0105dasz g\u0142odno >_<"
+      Wygl\u0105dasz na g\u0142odnego >_<"
     m_Metadata:
       m_Items: []
   - m_Id: 74137876288282624
@@ -1087,7 +1087,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74473519275089920
-    m_Localized: "\nWoah!! Jaka b\xF3jka!!"
+    m_Localized: "\nWooow!! Jaka b\xF3jka!!"
     m_Metadata:
       m_Items: []
   - m_Id: 74473520520798208
@@ -1136,7 +1136,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74495493175025664
-    m_Localized: Ohh.. What are you crafting?
+    m_Localized: "Ooo.. Co tam sk\u0142adasz?"
     m_Metadata:
       m_Items: []
   - m_Id: 74495494441705472
@@ -1226,8 +1226,8 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 74499492481638400
     m_Localized: "Co bardziej lubisz? Noc czy dzie\u0144? Ja najbardziej kocham noc!
-      Gwie\u017Adziste niebo! Ale nieznosze tych wszystkich nocnych mob\xF3w >_<
-      <33"
+      Gwie\u017Adziste niebo! Ale nie znosz\u0119 tych wszystkich nocnych mob\xF3w
+      >_< <33"
     m_Metadata:
       m_Items: []
   - m_Id: 74499493685403648
@@ -1235,7 +1235,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74499494822060032
-    m_Localized: La di da di duu! Laa laa laa li louuu! <3
+    m_Localized: La di da di duu! Laa laa laa li luuu! <3
     m_Metadata:
       m_Items: []
   - m_Id: 74500969312854016
@@ -1259,7 +1259,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74501548428795904
-    m_Localized: "Ajj, brzuszek ci znowu burczy, co nie> Hehe~ czas na przek\u0105sk\u0119!"
+    m_Localized: "Ajj, brzuszek ci znowu burczy, co nie? Hehe~ czas na przek\u0105sk\u0119!"
     m_Metadata:
       m_Items: []
   - m_Id: 74501549779361792
@@ -1273,8 +1273,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74501552463716352
-    m_Localized: "Huh!? Tw\xF3j g\u0142od jest bardzo nisko!! Szybko, czas jedzonka!
-      Munch munch <3"
+    m_Localized: "Huh!? Tw\xF3j pasek g\u0142odu jest bardzo nisko!! Szybko, czas
+      jedzonka! Am am <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74780049190985728
@@ -1302,6 +1302,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 74780051216834560
     m_Localized: Minecraft Integration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533177715499008
+    m_Localized: Timer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533281222533120
+    m_Localized: Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533283390988288
+    m_Localized: Stop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533389917921280
+    m_Localized: "This is the timer function. You can set a timer for up to 24 hours
+      and 59 minutes. You can also enter custom text to label your timer, so you
+      know what it\u2019s for. For example, set it to 15 minutes and add a note to
+      remind yourself when your pizza is ready. After the timer ends, you can reuse
+      it anytime."
     m_Metadata:
       m_Items: []
   references:

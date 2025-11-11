@@ -28,6 +28,9 @@ public class MEVoicePack : MonoBehaviour
     [Header("Chatbot Sounds")]
     public AudioClip chatBotStreamClip;
 
+    [Header("Minecraft Sounds")]
+    public AudioClip minecraftStreamClip;
+
     [Header("Ui Sounds")]
     public List<AudioClip> menuStartupClips = new();
     public List<AudioClip> menuOpenClips = new();
@@ -59,6 +62,7 @@ public class MEVoicePack : MonoBehaviour
     private readonly HashSet<int> _processedBigTimer = new();
     private readonly HashSet<int> _processedChatBot = new();
     private readonly HashSet<int> _processedMenu = new();
+    private readonly HashSet<int> _processedMinecraft = new();
 
     private bool _applied;
     private Coroutine _watcher;
@@ -102,6 +106,7 @@ public class MEVoicePack : MonoBehaviour
         _processedBigTimer.Clear();
         _processedChatBot.Clear();
         _processedMenu.Clear();
+        _processedMinecraft.Clear();
         if (revertOnDisable) Revert();
     }
 
@@ -116,6 +121,7 @@ public class MEVoicePack : MonoBehaviour
         var bigTimers = FindObjectsByType<AvatarBigScreenTimer>(FindObjectsSortMode.None);
         var chatBots = FindObjectsByType<ChatBot>(FindObjectsSortMode.None);
         var menuHandlers = FindObjectsByType<MenuAudioHandler>(FindObjectsSortMode.None);
+        var mcHandlers = FindObjectsByType<AvatarMinecraftMessages>(FindObjectsSortMode.None);
 #else
         var dragHandlers = FindObjectsOfType<AvatarDragSoundHandler>(true);
         var petHandlers = FindObjectsOfType<PetVoiceReactionHandler>(true);
@@ -124,6 +130,7 @@ public class MEVoicePack : MonoBehaviour
         var bigTimers = FindObjectsOfType<AvatarBigScreenTimer>(true);
         var chatBots = FindObjectsOfType<ChatBot>(true);
         var menuHandlers = FindObjectsOfType<MenuAudioHandler>(true);
+        var mcHandlers = FindObjectsOfType<AvatarMinecraftMessages>(true);
 #endif
         ApplyDragOverridesTo(dragHandlers);
         ApplyPetOverridesTo(petHandlers);
@@ -132,6 +139,7 @@ public class MEVoicePack : MonoBehaviour
         ApplyBigScreenTimerOverridesTo(bigTimers);
         ApplyChatBotOverridesTo(chatBots);
         ApplyMenuAudioOverridesTo(menuHandlers);
+        ApplyMinecraftOverridesTo(mcHandlers);
         _applied = true;
     }
 
@@ -199,6 +207,7 @@ public class MEVoicePack : MonoBehaviour
             var bigs = FindObjectsByType<AvatarBigScreenTimer>(FindObjectsSortMode.None);
             var bots = FindObjectsByType<ChatBot>(FindObjectsSortMode.None);
             var menus = FindObjectsByType<MenuAudioHandler>(FindObjectsSortMode.None);
+            var mcs = FindObjectsByType<AvatarMinecraftMessages>(FindObjectsSortMode.None);
 #else
             var drags = FindObjectsOfType<AvatarDragSoundHandler>(true);
             var pets = FindObjectsOfType<PetVoiceReactionHandler>(true);
@@ -207,6 +216,7 @@ public class MEVoicePack : MonoBehaviour
             var bigs = FindObjectsOfType<AvatarBigScreenTimer>(true);
             var bots = FindObjectsOfType<ChatBot>(true);
             var menus = FindObjectsOfType<MenuAudioHandler>(true);
+            var mcs = FindObjectsOfType<AvatarMinecraftMessages>(true);
 #endif
             foreach (var d in drags)
             {
@@ -269,7 +279,13 @@ public class MEVoicePack : MonoBehaviour
                 ApplyMenuAudioOverridesTo(new[] { m });
                 _processedMenu.Add(id);
             }
-
+            foreach (var mc in mcs)
+            {
+                int id = mc.GetInstanceID();
+                if (_processedMinecraft.Contains(id)) continue;
+                ApplyMinecraftOverridesTo(new[] { mc });
+                _processedMinecraft.Add(id);
+            }
             yield return wait;
         }
     }
@@ -299,7 +315,6 @@ public class MEVoicePack : MonoBehaviour
             }
         }
     }
-
     private void ApplyPetOverridesTo(PetVoiceReactionHandler[] petHandlers)
     {
         if (petHandlers == null || petHandlers.Length == 0) return;
@@ -400,6 +415,22 @@ public class MEVoicePack : MonoBehaviour
             {
                 if (!_applied) _streamOriginals.Add((src, src.clip));
                 src.clip = chatBotStreamClip;
+                src.playOnAwake = false;
+            }
+        }
+    }
+    private void ApplyMinecraftOverridesTo(AvatarMinecraftMessages[] handlers)
+    {
+        if (handlers == null || handlers.Length == 0) return;
+        foreach (var h in handlers)
+        {
+            if (!h) continue;
+            var src = h.streamAudioSource;
+            if (!src) continue;
+            if (minecraftStreamClip)
+            {
+                if (!_applied) _streamOriginals.Add((src, src.clip));
+                src.clip = minecraftStreamClip;
                 src.playOnAwake = false;
             }
         }

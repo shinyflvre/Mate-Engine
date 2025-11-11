@@ -1098,11 +1098,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74149157028274176
-    m_Localized: C'est l'heure du dodo! Au lit. Bonne nuit <3
+    m_Localized: C'est l'heure du dodo ! Au lit. Bonne nuit <3
     m_Metadata:
       m_Items: []
   - m_Id: 74149158324314112
-    m_Localized: "Whoa, qu\u2019est-ce que tu viens de fabriquer l\xE0?\n"
+    m_Localized: "Waouh, qu\u2019est-ce que tu viens de fabriquer ?\n"
     m_Metadata:
       m_Items: []
   - m_Id: 74429045333336064
@@ -1129,11 +1129,12 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74473519275089920
-    m_Localized: Woah !! Quel combat !!
+    m_Localized: Waouh !! Quel combat !!
     m_Metadata:
       m_Items: []
   - m_Id: 74473520520798208
-    m_Localized: "Mmh... Je crois que c\u2019est... ah oui ! C\u2019est <biome> !!\n"
+    m_Localized: "Mmh ... Je crois que c\u2019est ... ah oui ! C\u2019est <biome>
+      !!\n"
     m_Metadata:
       m_Items: []
   - m_Id: 74494164503404544
@@ -1149,7 +1150,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74494450139701248
-    m_Localized: 'Woah ! Nous sommes maintenant dans <biome> ! Incroyable ! <3
+    m_Localized: 'Waouh ! Nous sommes maintenant dans <biome> ! Incroyable ! <3
 
 '
     m_Metadata:
@@ -1167,7 +1168,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74495033496084480
-    m_Localized: 'Ohh !.. Tu es trop fort !! Je suis contente que tu sois si puissant
+    m_Localized: 'Ohh ! Tu es trop fort !! Je suis contente que tu sois si puissant
       ! <3
 
 '
@@ -1184,20 +1185,20 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 74495491606355968
-    m_Localized: "Ohh.. Qu\u2019est-ce que tu fabriques ?\n"
+    m_Localized: "Ohh ... Qu\u2019est-ce que tu fabriques ?\n"
     m_Metadata:
       m_Items: []
   - m_Id: 74495493175025664
-    m_Localized: Ohh.. What are you crafting?
+    m_Localized: "Ohh ... Qu\u2019est-ce que tu fabriques ?\n"
     m_Metadata:
       m_Items: []
   - m_Id: 74495494441705472
-    m_Localized: "Qu\u2019est-ce qu\u2019on fabrique l\xE0..? o:\n"
+    m_Localized: "Qu\u2019est-ce qu\u2019on fabrique ici ? o:\n"
     m_Metadata:
       m_Items: []
   - m_Id: 74496053102026752
-    m_Localized: "Oh.. Des fois j'aime vraiment la pluie, tu sais ? \xC7a peut \xEAtre
-      si reposant ! <3"
+    m_Localized: "Oh ... Des fois j'aime vraiment la pluie, tu sais ? \xC7a peut
+      \xEAtre si reposant ! <3"
     m_Metadata:
       m_Items: []
   - m_Id: 74496054406455296
@@ -1373,6 +1374,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 74780051216834560
     m_Localized: Minecraft Integration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533177715499008
+    m_Localized: Timer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533281222533120
+    m_Localized: Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533283390988288
+    m_Localized: Stop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78533389917921280
+    m_Localized: "This is the timer function. You can set a timer for up to 24 hours
+      and 59 minutes. You can also enter custom text to label your timer, so you
+      know what it\u2019s for. For example, set it to 15 minutes and add a note to
+      remind yourself when your pizza is ready. After the timer ends, you can reuse
+      it anytime."
     m_Metadata:
       m_Items: []
   references:
