@@ -53,7 +53,7 @@ https://github.com/maoxig/MateEngine-CustomDancePlayer
 
 A free, lightweight alternative to **Desktop Mate** with custom VRM support and modding. Fewer limitations, more freedom.
 
-- **App License**: Mixed — GNU AGPL v3 & MateProv2 License
+- **App License**:  MateProv2 License
   *Please read the license terms carefully.*
 - **Default Avatar License**: All Rights Reserved by [Yorshka Shop](https://yorshkasencho.booth.pm/)  
   *Do not redistribute this model in your builds.*
@@ -71,7 +71,7 @@ Why? Because **Desktop Mate** charges **$10–$25 USD** for single character mod
 
 - It's **completely free**
 - It supports **custom VRM avatars**
-- It’s **open-source and moddable**
+- It’s **available-source and moddable**
 
 ![Mate Engine Preview](https://i.imgur.com/nNyWA1L.png)
 
