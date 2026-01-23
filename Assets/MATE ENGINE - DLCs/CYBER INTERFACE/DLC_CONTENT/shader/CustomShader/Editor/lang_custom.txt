@@ -1,10 +1,10 @@
-Language	English	Japanese
-sBugSettings	Bug Settings	バグ設定
-sBugAnimation	Bug Animation	バグの描画
-sBase	Base Setting	基本設定
-sFrameRate	Frame Rate	フレームレート
-sFrequency	Frequency	ノイズの頻度
-sAberration	Chromatic Aberration	色収差設定
-sAberrationR	R	R
-sAberrationG	G	G
-sAberrationB	B	B
+Language	English	Japanese	Chinese Traditional
+sBugSettings	Bug Settings	バグ設定	錯誤設定
+sBugAnimation	Bug Animation	バグの描画	錯誤動畫
+sBase	Base Setting	基本設定	基本設定
+sFrameRate	Frame Rate	フレームレート	幀數
+sFrequency	Frequency	ノイズの頻度	頻率
+sAberration	Chromatic Aberration	色収差設定	色差設定
+sAberrationR	R	R	R
+sAberrationG	G	G	G
+sAberrationB	B	B	B
