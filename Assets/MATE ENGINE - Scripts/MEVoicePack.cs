@@ -8,8 +8,8 @@ using UnityEngine.EventSystems;
 public class MEVoicePack : MonoBehaviour
 {
     [Header("Drag Sounds")]
-    public AudioClip dragStartClip;
-    public AudioClip dragStopClip;
+    public List<AudioClip> dragStartClip;
+    public List<AudioClip> dragStopClip;
 
     [Header("Reaction Sounds")]
     public List<PetRegionOverride> petRegionOverrides = new();
@@ -296,17 +296,22 @@ public class MEVoicePack : MonoBehaviour
         if (!_applied) _dragOriginals.Clear();
         foreach (var h in handlers)
         {
-            if (dragStartClip && h.dragStartSound)
+            if (dragStartClip.Count > 0 && h.dragStartSound)
             {
                 if (!_applied) _dragOriginals.Add((h.dragStartSound, h.dragStartSound.clip));
-                h.dragStartSound.clip = dragStartClip;
+                // Clears sounds list in case of existing objects 
+                h.dragStartSound.clip = dragStartClip[Random.Range(0, dragStartClip.Count)];
                 h.dragStartSound.playOnAwake = false;
+                h.dragStartSoundList.Clear();
+                h.dragStartSoundList = new List<AudioClip>(dragStartClip);
             }
-            if (dragStopClip && h.dragStopSound)
+            if (dragStopClip.Count > 0 && h.dragStopSound)
             {
                 if (!_applied) _dragOriginals.Add((h.dragStopSound, h.dragStopSound.clip));
-                h.dragStopSound.clip = dragStopClip;
+                h.dragStopSound.clip = dragStopClip[Random.Range(0, dragStopClip.Count)];
                 h.dragStopSound.playOnAwake = false;
+                h.dragStopSoundList.Clear();
+                h.dragStopSoundList = new List<AudioClip>(dragStopClip);
             }
         }
     }
