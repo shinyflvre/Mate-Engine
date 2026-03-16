@@ -431,7 +431,9 @@ public class AvatarHideHandler : MonoBehaviour
         int targetW = dragBaseW > 0 ? Mathf.Clamp(dragBaseW, 1, vw) : Mathf.Clamp(w, 1, vw);
         int targetH = dragBaseH > 0 ? Mathf.Clamp(dragBaseH, 1, vh) : Mathf.Clamp(h, 1, vh);
 
+        GetClipCursor(out RECT backup);
         SetWindowPos(unityHWND, IntPtr.Zero, 0, 0, targetW, targetH, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+        ClipCursor(ref backup);
     }
 
     RECT GetSnappedMonitorRect()

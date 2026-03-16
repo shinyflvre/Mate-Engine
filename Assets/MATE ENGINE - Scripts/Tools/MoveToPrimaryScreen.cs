@@ -9,6 +9,10 @@ public class MoveToPrimaryScreen : MonoBehaviour
 {
     private IntPtr unityHWND = IntPtr.Zero;
 
+    [DllImport("user32.dll")]
+    private static extern bool GetClipCursor(out RECT lpRect);
+    [DllImport("user32.dll")]
+    private static extern bool ClipCursor(ref RECT lpRect);
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
@@ -44,7 +48,9 @@ public class MoveToPrimaryScreen : MonoBehaviour
         int x = bounds.Left + (bounds.Width - currentWidth) / 2;
         int y = bounds.Top + (bounds.Height - currentHeight) / 2;
 
+        GetClipCursor(out RECT backup);
         MoveWindow(unityHWND, x, y, currentWidth, currentHeight, true);
+        ClipCursor(ref backup);
 
         Debug.Log($"[MoveToPrimaryScreen] moved window {currentWidth}x{currentHeight} to {x},{y}");
     }
