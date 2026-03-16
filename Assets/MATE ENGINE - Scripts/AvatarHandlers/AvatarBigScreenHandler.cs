@@ -51,6 +51,10 @@ public class AvatarBigScreenHandler : MonoBehaviour
     [DllImport("user32.dll")]
     private static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
     [DllImport("user32.dll")]
+    private static extern bool GetClipCursor(out RECT lpRect);
+    [DllImport("user32.dll")]
+    private static extern bool ClipCursor(ref RECT lpRect);
+    [DllImport("user32.dll")]
     private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
     [DllImport("user32.dll")]
     private static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
@@ -259,7 +263,9 @@ public class AvatarBigScreenHandler : MonoBehaviour
             {
                 int w = originalWindowRect.right - originalWindowRect.left;
                 int h = originalWindowRect.bottom - originalWindowRect.top;
+                GetClipCursor(out RECT backup);
                 MoveWindow(unityHWND, originalWindowRect.left, originalWindowRect.top, w, h, true);
+                ClipCursor(ref backup);
             }
             if (MainCamera != null)
             {
@@ -324,7 +330,9 @@ public class AvatarBigScreenHandler : MonoBehaviour
             {
                 RECT targetScreen = FindBestMonitorRect(windowRect);
                 int sw = targetScreen.right - targetScreen.left, sh = targetScreen.bottom - targetScreen.top;
+                GetClipCursor(out RECT backup);
                 MoveWindow(unityHWND, targetScreen.left, targetScreen.top, sw, sh, true);
+                ClipCursor(ref backup);
                 originalWindowRect = windowRect; originalRectSet = true;
             }
         }

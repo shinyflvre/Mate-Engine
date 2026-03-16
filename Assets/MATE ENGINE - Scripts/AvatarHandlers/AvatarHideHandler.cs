@@ -411,7 +411,9 @@ public class AvatarHideHandler : MonoBehaviour
 
     void MoveOnly(int x, int y)
     {
+        GetClipCursor(out RECT backup);
         SetWindowPos(unityHWND, IntPtr.Zero, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+        ClipCursor(ref backup);
     }
 
     void EnsureSaneWindowSize()
@@ -429,7 +431,9 @@ public class AvatarHideHandler : MonoBehaviour
         int targetW = dragBaseW > 0 ? Mathf.Clamp(dragBaseW, 1, vw) : Mathf.Clamp(w, 1, vw);
         int targetH = dragBaseH > 0 ? Mathf.Clamp(dragBaseH, 1, vh) : Mathf.Clamp(h, 1, vh);
 
+        GetClipCursor(out RECT backup);
         SetWindowPos(unityHWND, IntPtr.Zero, 0, 0, targetW, targetH, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+        ClipCursor(ref backup);
     }
 
     RECT GetSnappedMonitorRect()
@@ -490,7 +494,9 @@ public class AvatarHideHandler : MonoBehaviour
 
     void SetTopMost(bool on)
     {
+        GetClipCursor(out RECT backup);
         SetWindowPos(unityHWND, on ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        ClipCursor(ref backup);
     }
 
     delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
@@ -510,6 +516,8 @@ public class AvatarHideHandler : MonoBehaviour
     [DllImport("user32.dll")] static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
     [DllImport("user32.dll", SetLastError = true)] static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
     [DllImport("user32.dll", SetLastError = true)] static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+    [DllImport("user32.dll")] static extern bool GetClipCursor(out RECT lpRect);
+    [DllImport("user32.dll")] static extern bool ClipCursor(ref RECT lpRect);
     [DllImport("user32.dll")] static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
     [DllImport("user32.dll")] static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
     [DllImport("user32.dll")] static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);

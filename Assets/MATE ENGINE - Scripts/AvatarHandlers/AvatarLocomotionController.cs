@@ -103,6 +103,8 @@ public sealed class AvatarLocomotionController : MonoBehaviour
     [DllImport("user32.dll", SetLastError = true)]
     static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
+    [DllImport("user32.dll")] static extern bool GetClipCursor(out RECT lpRect);
+    [DllImport("user32.dll")] static extern bool ClipCursor(ref RECT lpRect);
     [DllImport("user32.dll")] static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
     [DllImport("user32.dll")] static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
 
@@ -494,7 +496,10 @@ public sealed class AvatarLocomotionController : MonoBehaviour
 
         int yKeep = r.Top;
 
-        if (!SetWindowPos(_hwnd, IntPtr.Zero, clampedX, yKeep, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE))
+        GetClipCursor(out RECT backup);
+        bool ok = SetWindowPos(_hwnd, IntPtr.Zero, clampedX, yKeep, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+        ClipCursor(ref backup);
+        if (!ok)
         {
             StopWalking();
             ScheduleNextDecision(false);
