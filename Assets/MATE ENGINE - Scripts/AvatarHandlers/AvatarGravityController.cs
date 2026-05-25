@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using VRM;
 using UniVRM10;
-using System.Diagnostics;
 
 public class AvatarGravityController : MonoBehaviour
 {
@@ -22,12 +20,13 @@ public class AvatarGravityController : MonoBehaviour
     private List<VRMSpringBone> springBones = new();
     private List<VRM10SpringBoneJoint> springBoneJoints = new();
     private Vrm10Instance vrm10Instance;
-    private IntPtr unityHWND;
+    private IDesktopWindowApi windowApi;
 
     void Start()
     {
+        windowApi = DesktopWindowApi.Current;
+        windowApi.RefreshOwnWindow();
         previousWindowPos = GetWindowPosition();
-        unityHWND = Process.GetCurrentProcess().MainWindowHandle;
 
         // VRM0 spring bones
         springBones.AddRange(GetComponentsInChildren<VRMSpringBone>(true));
@@ -91,17 +90,10 @@ public class AvatarGravityController : MonoBehaviour
 
     private Vector2Int GetWindowPosition()
     {
-        GetWindowRect(unityHWND, out RECT rect);
-        return new Vector2Int(rect.left, rect.top);
-    }
-
-    [DllImport("user32.dll")]
-    private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct RECT
-    {
-        public int left, top, right, bottom;
+        if (windowApi == null) windowApi = DesktopWindowApi.Current;
+        if (windowApi.IsSupported && windowApi.TryGetOwnWindowRect(out DesktopRect rect))
+            return new Vector2Int(rect.Left, rect.Top);
+        return previousWindowPos;
     }
 
     #endregion

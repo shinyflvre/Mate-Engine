@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Runtime.InteropServices;
 
 public class AvatarBigScreenScreenSaver : MonoBehaviour
 {
@@ -32,24 +31,13 @@ public class AvatarBigScreenScreenSaver : MonoBehaviour
     private Animator avatarAnimator;
     private Vector2 lastMousePos;
     private float idleTimer = 0f;
-
-    [DllImport("user32.dll")]
-    private static extern bool GetCursorPos(out POINT lpPoint);
-
-    [DllImport("user32.dll")]
-    private static extern short GetAsyncKeyState(int vKey);
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct POINT
-    {
-        public int X;
-        public int Y;
-    }
+    private IDesktopWindowApi windowApi;
 
     void Start()
     {
         bigScreenHandler = GetComponent<AvatarBigScreenHandler>();
         avatarAnimator = GetComponent<Animator>();
+        windowApi = DesktopWindowApi.Current;
         lastMousePos = GetGlobalMousePosition();
         LoadSettings();
         ResetTimer();
@@ -185,19 +173,15 @@ public class AvatarBigScreenScreenSaver : MonoBehaviour
 
     Vector2 GetGlobalMousePosition()
     {
-        POINT point;
-        GetCursorPos(out point);
-        return new Vector2(point.X, point.Y);
+        if (windowApi == null) windowApi = DesktopWindowApi.Current;
+        if (windowApi != null && windowApi.TryGetCursorPosition(out DesktopPoint point))
+            return new Vector2(point.X, point.Y);
+        return Input.mousePosition;
     }
 
     bool IsAnyKeyPressed()
     {
-        for (int key = 0x08; key <= 0xFE; key++)
-        {
-            if ((GetAsyncKeyState(key) & 0x8000) != 0)
-                return true;
-        }
-        return false;
+        return Input.anyKeyDown;
     }
 
     bool IsInAllowedState()
@@ -214,20 +198,11 @@ public class AvatarBigScreenScreenSaver : MonoBehaviour
     private bool lastGlobalMouseDown = false;
     private bool IsGlobalUserInput()
     {
-        bool mouseDown = (GetAsyncKeyState(0x01) & 0x8000) != 0;
+        bool mouseDown = Input.GetMouseButton(0);
         bool mouseClick = mouseDown && !lastGlobalMouseDown;
         lastGlobalMouseDown = mouseDown;
 
-        bool keyPressed = false;
-        for (int key = 0x08; key <= 0xFE; key++)
-        {
-            if ((GetAsyncKeyState(key) & 0x8000) != 0)
-            {
-                keyPressed = true;
-                break;
-            }
-        }
-        return mouseClick || keyPressed;
+        return mouseClick || Input.anyKeyDown;
     }
 
 }

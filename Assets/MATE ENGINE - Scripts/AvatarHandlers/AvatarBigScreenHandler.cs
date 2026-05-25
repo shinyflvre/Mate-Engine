@@ -2,8 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 public class AvatarBigScreenHandler : MonoBehaviour
 {
@@ -30,13 +28,13 @@ public class AvatarBigScreenHandler : MonoBehaviour
     [Header("Canvas Blocking")]
     public GameObject moveCanvas;
 
-    private IntPtr unityHWND = IntPtr.Zero;
+    private IDesktopWindowApi windowApi;
     private bool isBigScreenActive = false;
     private Vector3 originalCamPos;
     private Quaternion originalCamRot;
     private float originalFOV;
     private float originalOrthoSize;
-    private RECT originalWindowRect;
+    private DesktopRect originalWindowRect;
     private bool originalRectSet = false;
     private Transform bone;
     private AvatarAnimatorController avatarAnimatorController;
@@ -44,17 +42,6 @@ public class AvatarBigScreenHandler : MonoBehaviour
     private Coroutine fadeCoroutine;
     private bool isFading = false;
     private bool isInDesktopTransition = false;
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct RECT { public int left, top, right, bottom; }
-
-    [DllImport("user32.dll")]
-    private static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
-    [DllImport("user32.dll")]
-    private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-    [DllImport("user32.dll")]
-    private static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
-    private delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
 
     public static List<AvatarBigScreenHandler> ActiveHandlers = new List<AvatarBigScreenHandler>();
 
@@ -78,7 +65,8 @@ public class AvatarBigScreenHandler : MonoBehaviour
 
     void Start()
     {
-        unityHWND = Process.GetCurrentProcess().MainWindowHandle;
+        windowApi = DesktopWindowApi.Current;
+        windowApi.RefreshOwnWindow();
         if (MainCamera == null) MainCamera = Camera.main;
         if (avatarAnimator == null) avatarAnimator = GetComponent<Animator>();
         if (MainCamera != null)
@@ -88,7 +76,7 @@ public class AvatarBigScreenHandler : MonoBehaviour
             originalFOV = MainCamera.fieldOfView;
             originalOrthoSize = MainCamera.orthographicSize;
         }
-        if (unityHWND != IntPtr.Zero && GetWindowRect(unityHWND, out RECT r))
+        if (windowApi.IsSupported && windowApi.TryGetOwnWindowRect(out DesktopRect r))
         {
             originalWindowRect = r;
             originalRectSet = true;
@@ -255,11 +243,9 @@ public class AvatarBigScreenHandler : MonoBehaviour
             if (avatarAnimator != null) avatarAnimator.SetBool("isBigScreen", false);
             if (avatarAnimatorController != null) avatarAnimatorController.BlockDraggingOverride = false;
             if (moveCanvas != null && moveCanvasWasActive) moveCanvas.SetActive(true);
-            if (unityHWND != IntPtr.Zero && originalRectSet)
+            if (windowApi != null && windowApi.IsSupported && originalRectSet)
             {
-                int w = originalWindowRect.right - originalWindowRect.left;
-                int h = originalWindowRect.bottom - originalWindowRect.top;
-                MoveWindow(unityHWND, originalWindowRect.left, originalWindowRect.top, w, h, true);
+                windowApi.TryMoveOwnWindow(originalWindowRect.Left, originalWindowRect.Top, originalWindowRect.Width, originalWindowRect.Height, true);
             }
             if (MainCamera != null)
             {
@@ -271,23 +257,23 @@ public class AvatarBigScreenHandler : MonoBehaviour
         }
     }
 
-    RECT FindBestMonitorRect(RECT windowRect)
+    DesktopRect FindBestMonitorRect(DesktopRect windowRect)
     {
-        List<RECT> monitorRects = new List<RECT>();
-        EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdc, ref RECT lprcMonitor, IntPtr data) =>
-        { monitorRects.Add(lprcMonitor); return true; }, IntPtr.Zero);
+        List<DesktopRect> monitorRects = new List<DesktopRect>();
+        var monitors = windowApi.GetMonitors();
+        for (int i = 0; i < monitors.Count; i++) monitorRects.Add(monitors[i].Rect);
         int idx = 0, maxArea = 0;
         for (int i = 0; i < monitorRects.Count; i++)
         {
             int overlap = OverlapArea(windowRect, monitorRects[i]);
             if (overlap > maxArea) { idx = i; maxArea = overlap; }
         }
-        return monitorRects.Count > 0 ? monitorRects[idx] : new RECT { left = 0, top = 0, right = Screen.currentResolution.width, bottom = Screen.currentResolution.height };
+        return monitorRects.Count > 0 ? monitorRects[idx] : new DesktopRect(0, 0, Screen.currentResolution.width, Screen.currentResolution.height);
     }
-    int OverlapArea(RECT a, RECT b)
+    int OverlapArea(DesktopRect a, DesktopRect b)
     {
-        int x1 = Math.Max(a.left, b.left), x2 = Math.Min(a.right, b.right);
-        int y1 = Math.Max(a.top, b.top), y2 = Math.Min(a.bottom, b.bottom);
+        int x1 = Math.Max(a.Left, b.Left), x2 = Math.Min(a.Right, b.Right);
+        int y1 = Math.Max(a.Top, b.Top), y2 = Math.Min(a.Bottom, b.Bottom);
         int w = x2 - x1, h = y2 - y1;
         return (w > 0 && h > 0) ? w * h : 0;
     }
@@ -318,13 +304,13 @@ public class AvatarBigScreenHandler : MonoBehaviour
         camPos.y = toY;
         MainCamera.transform.position = camPos;
 
-        if (toFadeY && unityHWND != IntPtr.Zero)
+        if (toFadeY && windowApi != null && windowApi.IsSupported)
         {
-            if (GetWindowRect(unityHWND, out RECT windowRect))
+            if (windowApi.TryGetOwnWindowRect(out DesktopRect windowRect))
             {
-                RECT targetScreen = FindBestMonitorRect(windowRect);
-                int sw = targetScreen.right - targetScreen.left, sh = targetScreen.bottom - targetScreen.top;
-                MoveWindow(unityHWND, targetScreen.left, targetScreen.top, sw, sh, true);
+                DesktopRect targetScreen = FindBestMonitorRect(windowRect);
+                int sw = targetScreen.Width, sh = targetScreen.Height;
+                windowApi.TryMoveOwnWindow(targetScreen.Left, targetScreen.Top, sw, sh, true);
                 originalWindowRect = windowRect; originalRectSet = true;
             }
         }
