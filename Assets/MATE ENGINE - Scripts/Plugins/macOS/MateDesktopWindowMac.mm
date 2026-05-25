@@ -1,10 +1,8 @@
 #import <Cocoa/Cocoa.h>
 #import <CoreGraphics/CoreGraphics.h>
-#import <ApplicationServices/ApplicationServices.h>
+#include <math.h>
 #include <string.h>
 #include <stdlib.h>
-
-extern "C" {
 
 typedef struct MateDWPoint
 {
@@ -125,16 +123,7 @@ static bool FillInfo(NSDictionary *window, MateDWWindowInfo *outInfo, int z)
     return outInfo->windowId != 0;
 }
 
-int MateDWGetWindowCount(void)
-{
-    @autoreleasepool
-    {
-        NSArray *windows = CopyWindowInfoArray();
-        return windows != nil ? (int)[windows count] : 0;
-    }
-}
-
-int MateDWCopyWindowInfos(MateDWWindowInfo *buffer, int capacity)
+extern "C" int MateDWCopyWindowInfos(MateDWWindowInfo *buffer, int capacity)
 {
     if (buffer == NULL || capacity <= 0) return 0;
     @autoreleasepool
@@ -152,7 +141,7 @@ int MateDWCopyWindowInfos(MateDWWindowInfo *buffer, int capacity)
     }
 }
 
-bool MateDWGetWindowRect(uint32_t windowId, MateDWRect *rect)
+extern "C" bool MateDWGetWindowRect(uint32_t windowId, MateDWRect *rect)
 {
     if (windowId == 0 || rect == NULL) return false;
     @autoreleasepool
@@ -197,7 +186,7 @@ static bool FindOwnWindowRect(MateDWRect *rect)
     return found;
 }
 
-bool MateDWGetOwnWindowRect(MateDWRect *rect)
+extern "C" bool MateDWGetOwnWindowRect(MateDWRect *rect)
 {
     if (rect == NULL) return false;
     @autoreleasepool
@@ -206,7 +195,7 @@ bool MateDWGetOwnWindowRect(MateDWRect *rect)
     }
 }
 
-bool MateDWGetOwnClientRect(MateDWRect *rect)
+extern "C" bool MateDWGetOwnClientRect(MateDWRect *rect)
 {
     if (rect == NULL) return false;
     @autoreleasepool
@@ -214,8 +203,7 @@ bool MateDWGetOwnClientRect(MateDWRect *rect)
         NSWindow *window = [NSApp mainWindow] ?: [NSApp keyWindow];
         if (window == nil) return FindOwnWindowRect(rect);
 
-        NSRect content = [window contentRectForFrameRect:[window frame]];
-        NSRect screenRect = [window convertRectToScreen:content];
+        NSRect screenRect = [window contentRectForFrameRect:[window frame]];
         NSScreen *screen = [window screen] ?: [NSScreen mainScreen];
         if (screen == nil) return FindOwnWindowRect(rect);
 
@@ -234,7 +222,7 @@ bool MateDWGetOwnClientRect(MateDWRect *rect)
     }
 }
 
-bool MateDWMoveOwnWindow(int x, int y, int width, int height)
+extern "C" bool MateDWMoveOwnWindow(int x, int y, int width, int height)
 {
     if (width <= 0 || height <= 0) return false;
     @autoreleasepool
@@ -258,7 +246,7 @@ bool MateDWMoveOwnWindow(int x, int y, int width, int height)
     }
 }
 
-void MateDWSetOwnTopmost(bool enabled)
+extern "C" void MateDWSetOwnTopmost(bool enabled)
 {
     @autoreleasepool
     {
@@ -268,7 +256,7 @@ void MateDWSetOwnTopmost(bool enabled)
     }
 }
 
-bool MateDWGetCursorPosition(MateDWPoint *point)
+extern "C" bool MateDWGetCursorPosition(MateDWPoint *point)
 {
     if (point == NULL) return false;
     CGEventRef event = CGEventCreate(NULL);
@@ -280,14 +268,14 @@ bool MateDWGetCursorPosition(MateDWPoint *point)
     return true;
 }
 
-int MateDWGetMonitorCount(void)
+extern "C" int MateDWGetMonitorCount(void)
 {
     uint32_t count = 0;
     CGGetActiveDisplayList(0, NULL, &count);
     return (int)count;
 }
 
-bool MateDWGetMonitorRect(int index, MateDWRect *rect)
+extern "C" bool MateDWGetMonitorRect(int index, MateDWRect *rect)
 {
     if (rect == NULL || index < 0) return false;
     uint32_t count = 0;
@@ -305,6 +293,4 @@ bool MateDWGetMonitorRect(int index, MateDWRect *rect)
     rect->right = CGRectGetMaxX(bounds);
     rect->bottom = CGRectGetMaxY(bounds);
     return true;
-}
-
 }

@@ -620,9 +620,10 @@ class WindowsDesktopWindowApi : DesktopWindowApiBase
 class MacDesktopWindowApi : DesktopWindowApiBase
 {
     const int MaxString = 256;
+    const int MaxWindowCount = 512;
+    bool _loggedCoreGraphicsBackend;
 
     public override bool IsSupported => true;
-
     public override bool RefreshOwnWindow()
     {
         try { _ = UniWindowController.current; return true; }
@@ -644,24 +645,13 @@ class MacDesktopWindowApi : DesktopWindowApiBase
 
     public override bool TryGetOwnWindowRect(out DesktopRect rect)
     {
+        if (TryGetUniWindowRect(out rect)) return true;
         if (MacNative.GetOwnWindowRect(out NativeRect nativeRect))
         {
             rect = nativeRect.ToDesktopRect();
-            return true;
-        }
-        try
-        {
-            var controller = UniWindowController.current;
-            Vector2 pos = controller.windowPosition;
-            Vector2 size = controller.windowSize;
-            rect = DesktopRect.FromPositionSize(pos.x, pos.y, size.x, size.y);
             return !rect.IsEmpty;
         }
-        catch
-        {
-            rect = new DesktopRect();
-            return false;
-        }
+        return false;
     }
 
     public override bool TryGetOwnClientRect(out DesktopRect rect)
@@ -669,8 +659,9 @@ class MacDesktopWindowApi : DesktopWindowApiBase
         if (MacNative.GetOwnClientRect(out NativeRect nativeRect))
         {
             rect = nativeRect.ToDesktopRect();
-            return true;
+            return !rect.IsEmpty;
         }
+        if (TryGetUniWindowClientRect(out rect)) return true;
         if (TryGetOwnWindowRect(out rect)) return true;
         return false;
     }
@@ -678,15 +669,17 @@ class MacDesktopWindowApi : DesktopWindowApiBase
     public override bool TryMoveOwnWindow(int x, int y, int width, int height, bool repaint)
     {
         if (width <= 0 || height <= 0) return false;
-        if (MacNative.MoveOwnWindow(x, y, width, height)) return true;
         try
         {
             var controller = UniWindowController.current;
-            controller.windowPosition = new Vector2(x, y);
             controller.windowSize = new Vector2(width, height);
+            controller.windowPosition = new Vector2(x, y);
             return true;
         }
-        catch { return false; }
+        catch
+        {
+            return MacNative.MoveOwnWindow(x, y, width, height);
+        }
     }
 
     public override bool TryMoveOwnWindowPosition(int x, int y)
@@ -702,31 +695,72 @@ class MacDesktopWindowApi : DesktopWindowApiBase
         catch { MacNative.SetOwnTopmost(enabled); }
     }
 
+    bool TryGetUniWindowRect(out DesktopRect rect)
+    {
+        try
+        {
+            var controller = UniWindowController.current;
+            Vector2 pos = controller.windowPosition;
+            Vector2 size = controller.windowSize;
+            rect = DesktopRect.FromPositionSize(pos.x, pos.y, size.x, size.y);
+            return !rect.IsEmpty;
+        }
+        catch
+        {
+            rect = new DesktopRect();
+            return false;
+        }
+    }
+
+    bool TryGetUniWindowClientRect(out DesktopRect rect)
+    {
+        try
+        {
+            var controller = UniWindowController.current;
+            Vector2 pos = controller.windowPosition;
+            Vector2 size = controller.clientSize;
+            if (size.x <= 0f || size.y <= 0f) size = controller.windowSize;
+            rect = DesktopRect.FromPositionSize(pos.x, pos.y, size.x, size.y);
+            return !rect.IsEmpty;
+        }
+        catch
+        {
+            rect = new DesktopRect();
+            return false;
+        }
+    }
+
     public override IReadOnlyList<DesktopWindowInfo> EnumerateWindows()
     {
         Windows.Clear();
-        int count = MacNative.GetWindowCount();
-        if (count <= 0) return Windows;
-
-        var native = new NativeWindowInfo[Mathf.Min(count, 512)];
+        var native = new NativeWindowInfo[MaxWindowCount];
         int copied = MacNative.CopyWindowInfos(native, native.Length);
+        AddNativeWindows(native, copied);
+        LogCoreGraphicsBackend();
+        return Windows;
+    }
+
+    void AddNativeWindows(NativeWindowInfo[] native, int copied)
+    {
         for (int i = 0; i < copied; i++)
         {
             NativeWindowInfo w = native[i];
             var rect = new DesktopRect(w.Left, w.Top, w.Right, w.Bottom);
             if (!w.OnScreen || rect.Width < 200 || rect.Height < 60) continue;
-            if (w.OwnerPid == CurrentProcessId) continue;
+            uint ownerPid = w.OwnerPid;
+            string ownerName = w.OwnerName ?? string.Empty;
+            string title = w.Title ?? string.Empty;
+
+            if (ownerPid == CurrentProcessId) continue;
             if (w.Layer != 0) continue;
             if (w.Alpha <= 0.05f) continue;
 
-            string ownerName = w.OwnerName ?? string.Empty;
-            string title = w.Title ?? string.Empty;
             if (IsSystemOrDesktopWindow(ownerName, title)) continue;
 
             Windows.Add(new DesktopWindowInfo
             {
                 Id = new IntPtr(unchecked((int)w.WindowId)),
-                OwnerPid = w.OwnerPid,
+                OwnerPid = ownerPid,
                 OwnerName = ownerName,
                 Title = title,
                 Rect = rect,
@@ -736,7 +770,6 @@ class MacDesktopWindowApi : DesktopWindowApiBase
                 ZOrder = Windows.Count
             });
         }
-        return Windows;
     }
 
     public override bool TryGetWindowRect(IntPtr windowId, out DesktopRect rect)
@@ -792,6 +825,13 @@ class MacDesktopWindowApi : DesktopWindowApiBase
         return false;
     }
 
+    void LogCoreGraphicsBackend()
+    {
+        if (_loggedCoreGraphicsBackend) return;
+        _loggedCoreGraphicsBackend = true;
+        UnityEngine.Debug.Log("Mate Engine macOS window API using CoreGraphics/AppKit backend.");
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     struct NativePoint
     {
@@ -836,9 +876,6 @@ class MacDesktopWindowApi : DesktopWindowApiBase
     static class MacNative
     {
         const string Lib = "MateDesktopWindowMac";
-
-        [DllImport(Lib, EntryPoint = "MateDWGetWindowCount")]
-        public static extern int GetWindowCount();
 
         [DllImport(Lib, EntryPoint = "MateDWCopyWindowInfos")]
         public static extern int CopyWindowInfos([Out] NativeWindowInfo[] windows, int capacity);
