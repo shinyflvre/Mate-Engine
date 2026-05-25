@@ -1,117 +1,117 @@
 #if UNITY_STANDALONE_OSX
 
 using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.IO;
+using Kirurobo;
+using UnityEngine;
 
 namespace SFB {
     public class StandaloneFileBrowserMac : IStandaloneFileBrowser {
-        private static Action<string[]> _openFileCb;
-        private static Action<string[]> _openFolderCb;
-        private static Action<string> _saveFileCb;
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void AsyncCallback(string path);
-
-        [AOT.MonoPInvokeCallback(typeof(AsyncCallback))]
-        private static void openFileCb(string result) {
-            _openFileCb.Invoke(result.Split((char)28));
-        }
-
-        [AOT.MonoPInvokeCallback(typeof(AsyncCallback))]
-        private static void openFolderCb(string result) {
-            _openFolderCb.Invoke(result.Split((char)28));
-        }
-
-        [AOT.MonoPInvokeCallback(typeof(AsyncCallback))]
-        private static void saveFileCb(string result) {
-            _saveFileCb.Invoke(result);
-        }
-
-        [DllImport("StandaloneFileBrowser")]
-        private static extern IntPtr DialogOpenFilePanel(string title, string directory, string extension, bool multiselect);
-        [DllImport("StandaloneFileBrowser")]
-        private static extern void DialogOpenFilePanelAsync(string title, string directory, string extension, bool multiselect, AsyncCallback callback);
-        [DllImport("StandaloneFileBrowser")]
-        private static extern IntPtr DialogOpenFolderPanel(string title, string directory, bool multiselect);
-        [DllImport("StandaloneFileBrowser")]
-        private static extern void DialogOpenFolderPanelAsync(string title, string directory, bool multiselect, AsyncCallback callback);
-        [DllImport("StandaloneFileBrowser")]
-        private static extern IntPtr DialogSaveFilePanel(string title, string directory, string defaultName, string extension);
-        [DllImport("StandaloneFileBrowser")]
-        private static extern void DialogSaveFilePanelAsync(string title, string directory, string defaultName, string extension, AsyncCallback callback);
-
         public string[] OpenFilePanel(string title, string directory, ExtensionFilter[] extensions, bool multiselect) {
-            var paths = Marshal.PtrToStringAnsi(DialogOpenFilePanel(
-                title,
-                directory,
-                GetFilterFromFileExtensionList(extensions),
-                multiselect));
-            return paths.Split((char)28);
+            string[] result = Array.Empty<string>();
+            var settings = new FilePanel.Settings {
+                title = title,
+                initialDirectory = NormalizeDirectory(directory),
+                filters = ConvertFilters(extensions),
+                flags = multiselect ? FilePanel.Flag.AllowMultipleSelection : FilePanel.Flag.None
+            };
+
+            FilePanel.OpenFilePanel(settings, paths => {
+                result = NormalizeResult(paths);
+            });
+
+            return result;
         }
 
         public void OpenFilePanelAsync(string title, string directory, ExtensionFilter[] extensions, bool multiselect, Action<string[]> cb) {
-            _openFileCb = cb;
-            DialogOpenFilePanelAsync(
-                title,
-                directory,
-                GetFilterFromFileExtensionList(extensions),
-                multiselect,
-                openFileCb);
+            cb?.Invoke(OpenFilePanel(title, directory, extensions, multiselect));
         }
 
         public string[] OpenFolderPanel(string title, string directory, bool multiselect) {
-            var paths = Marshal.PtrToStringAnsi(DialogOpenFolderPanel(
-                title,
-                directory,
-                multiselect));
-            return paths.Split((char)28);
+            Debug.LogWarning("[StandaloneFileBrowserMac] Folder selection is not supported by the macOS backend.");
+            return Array.Empty<string>();
         }
 
         public void OpenFolderPanelAsync(string title, string directory, bool multiselect, Action<string[]> cb) {
-            _openFolderCb = cb;
-            DialogOpenFolderPanelAsync(
-                title,
-                directory,
-                multiselect,
-                openFolderCb);
+            cb?.Invoke(OpenFolderPanel(title, directory, multiselect));
         }
 
         public string SaveFilePanel(string title, string directory, string defaultName, ExtensionFilter[] extensions) {
-            return Marshal.PtrToStringAnsi(DialogSaveFilePanel(
-                title,
-                directory,
-                defaultName,
-                GetFilterFromFileExtensionList(extensions)));
+            string[] result = Array.Empty<string>();
+            var settings = new FilePanel.Settings {
+                title = title,
+                initialDirectory = NormalizeDirectory(directory),
+                initialFile = defaultName ?? "",
+                filters = ConvertFilters(extensions),
+                flags = FilePanel.Flag.CanCreateDirectories | FilePanel.Flag.OverwritePrompt
+            };
+
+            FilePanel.SaveFilePanel(settings, paths => {
+                result = NormalizeResult(paths);
+            });
+
+            return result.Length > 0 ? result[0] : "";
         }
 
         public void SaveFilePanelAsync(string title, string directory, string defaultName, ExtensionFilter[] extensions, Action<string> cb) {
-            _saveFileCb = cb;
-            DialogSaveFilePanelAsync(
-                title,
-                directory,
-                defaultName,
-                GetFilterFromFileExtensionList(extensions),
-                saveFileCb);
+            cb?.Invoke(SaveFilePanel(title, directory, defaultName, extensions));
         }
 
-        private static string GetFilterFromFileExtensionList(ExtensionFilter[] extensions) {
-            if (extensions == null) {
+        private static FilePanel.Filter[] ConvertFilters(ExtensionFilter[] extensions) {
+            if (extensions == null || extensions.Length == 0)
+                return new[] { new FilePanel.Filter("All files", "*") };
+
+            var filters = new List<FilePanel.Filter>(extensions.Length + 1) {
+                new FilePanel.Filter("All files", "*")
+            };
+            foreach (var extension in extensions) {
+                if (extension.Extensions == null || extension.Extensions.Length == 0)
+                    continue;
+
+                var normalizedExtensions = new List<string>(extension.Extensions.Length);
+                foreach (string raw in extension.Extensions) {
+                    string value = (raw ?? "").Trim().TrimStart('.');
+                    if (!string.IsNullOrWhiteSpace(value))
+                        normalizedExtensions.Add(value);
+                }
+
+                if (normalizedExtensions.Count > 0)
+                    filters.Add(new FilePanel.Filter(extension.Name ?? "", normalizedExtensions.ToArray()));
+            }
+
+            return filters.ToArray();
+        }
+
+        private static string NormalizeDirectory(string directory) {
+            if (string.IsNullOrWhiteSpace(directory))
+                return "";
+
+            try {
+                if (Directory.Exists(directory))
+                    return directory;
+
+                if (File.Exists(directory))
+                    return Path.GetDirectoryName(directory) ?? "";
+            }
+            catch {
                 return "";
             }
 
-            var filterString = "";
-            foreach (var filter in extensions) {
-                filterString += filter.Name + ";";
+            return "";
+        }
 
-                foreach (var ext in filter.Extensions) {
-                    filterString += ext + ",";
-                }
+        private static string[] NormalizeResult(string[] paths) {
+            if (paths == null || paths.Length == 0)
+                return Array.Empty<string>();
 
-                filterString = filterString.Remove(filterString.Length - 1);
-                filterString += "|";
+            var result = new List<string>(paths.Length);
+            foreach (string path in paths) {
+                if (!string.IsNullOrWhiteSpace(path))
+                    result.Add(path);
             }
-            filterString = filterString.Remove(filterString.Length - 1);
-            return filterString;
+
+            return result.ToArray();
         }
     }
 }

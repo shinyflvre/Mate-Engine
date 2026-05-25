@@ -72,7 +72,7 @@ public class VRMLoader : MonoBehaviour
 
         try
         {
-            string avatarsPath = System.IO.Path.Combine(Application.persistentDataPath, "avatars.json");
+            string avatarsPath = MateEnginePaths.AvatarsJsonPath;
             if (System.IO.File.Exists(avatarsPath))
             {
                 var entries = JsonConvert.DeserializeObject<System.Collections.Generic.List<AvatarLibraryMenu.AvatarEntry>>(System.IO.File.ReadAllText(avatarsPath));
@@ -106,26 +106,25 @@ public class VRMLoader : MonoBehaviour
         if (isLoading) return;
 
         isLoading = true;
-        var extensions = new[] { new ExtensionFilter("Model Files", "vrm", "me", "prefab") };
-        string[] paths = StandaloneFileBrowser.OpenFilePanel("Select Model File", "", extensions, false);
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Select Model File", MateEnginePaths.DefaultImportDirectory, "", false);
         if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
-            LoadVRM(paths[0]);
+        {
+            if (!IsSupportedModelFile(paths[0]))
+            {
+                Debug.LogWarning("[VRMLoader] Unsupported model file: " + paths[0]);
+                isLoading = false;
+                return;
+            }
+
+            LoadVRM(MateEnginePaths.ImportModelToManagedStorage(paths[0]));
+        }
 
         isLoading = false;
     }
 
     public async void LoadVRM(string path)
     {
-        if (path.EndsWith(".me", StringComparison.OrdinalIgnoreCase))
-        {
-            LoadAssetBundleModel(path);
-            if (SaveLoadHandler.Instance != null)
-            {
-                SaveLoadHandler.Instance.data.selectedModelPath = path;
-                SaveLoadHandler.Instance.SaveToDisk();
-            }
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(path)) return;
 
         if (IsDLCReference(path))
         {
@@ -147,7 +146,23 @@ public class VRMLoader : MonoBehaviour
             return;
         }
 
-        if (!File.Exists(path)) return;
+        path = MateEnginePaths.ImportModelToManagedStorage(path);
+        if (!File.Exists(path))
+        {
+            Debug.LogWarning("[VRMLoader] Model file not found: " + path);
+            return;
+        }
+
+        if (path.EndsWith(".me", StringComparison.OrdinalIgnoreCase))
+        {
+            LoadAssetBundleModel(path);
+            if (SaveLoadHandler.Instance != null)
+            {
+                SaveLoadHandler.Instance.data.selectedModelPath = path;
+                SaveLoadHandler.Instance.SaveToDisk();
+            }
+            return;
+        }
 
         try
         {
@@ -326,7 +341,7 @@ public class VRMLoader : MonoBehaviour
 
     public void ResetModel()
     {
-        string vrmFolder = Path.Combine(Application.persistentDataPath, "VRM");
+        string vrmFolder = Path.Combine(MateEnginePaths.DataRoot, "VRM");
         if (Directory.Exists(vrmFolder))
             Directory.Delete(vrmFolder, true);
 
@@ -514,6 +529,25 @@ public class VRMLoader : MonoBehaviour
 #endif
         if (!File.Exists(path) && !path.EndsWith(".vrm") && !path.EndsWith(".me"))
             return true;
+        return false;
+    }
+
+    private bool IsSupportedModelFile(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        string extension = Path.GetExtension(path);
+        if (extension.Equals(".vrm", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (extension.Equals(".me", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+#if UNITY_EDITOR
+        if (extension.Equals(".prefab", StringComparison.OrdinalIgnoreCase))
+            return true;
+#endif
+
         return false;
     }
 
