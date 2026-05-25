@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
@@ -17,6 +18,8 @@ public class SaveLoadHandler : MonoBehaviour
     private string BaseDir => MateEnginePaths.SettingsDirectory(customDataDir);
 
     private string FilePath => MateEnginePaths.SettingsFilePath(customDataDir, fileName);
+    private bool _windowStateRestored;
+    private float _nextWindowStateSaveTime;
 
     private void Awake()
     {
@@ -57,6 +60,76 @@ public class SaveLoadHandler : MonoBehaviour
             limiter.targetFPS = data.fpsLimit;
             limiter.ApplyFPSLimit();
         }
+    }
+
+    private void Start()
+    {
+        StartCoroutine(RestoreWindowStateAfterStartup());
+        StartCoroutine(TrackWindowState());
+    }
+
+    private IEnumerator RestoreWindowStateAfterStartup()
+    {
+        yield return null;
+        for (int i = 0; i < 60; i++)
+        {
+            if (data != null && MateEngineWindowSize.TryApplyToExistingController(data.windowSizeState, GetSavedWindowPosition()))
+            {
+                _windowStateRestored = true;
+                yield break;
+            }
+            yield return null;
+        }
+    }
+
+    private IEnumerator TrackWindowState()
+    {
+        yield return null;
+        while (true)
+        {
+            yield return new WaitForSecondsRealtime(1f);
+            CaptureWindowState(false);
+        }
+    }
+
+    private Vector2? GetSavedWindowPosition()
+    {
+        if (data == null || !data.hasWindowPosition) return null;
+        Vector2 position = new Vector2(data.windowPositionX, data.windowPositionY);
+        return MateEngineWindowSize.IsValidPosition(position) ? position : null;
+    }
+
+    private void CaptureWindowState(bool saveImmediately)
+    {
+        if (!_windowStateRestored || data == null) return;
+
+        var controller = FindFirstObjectByType<Kirurobo.UniWindowController>();
+        if (controller == null) return;
+
+        Vector2 size = controller.windowSize;
+        Vector2 position = controller.windowPosition;
+        if (!MateEngineWindowSize.IsValidSize(size) || !MateEngineWindowSize.IsValidPosition(position)) return;
+
+        bool changed = !data.hasWindowPosition ||
+            Mathf.Abs(data.windowPositionX - position.x) > 0.5f ||
+            Mathf.Abs(data.windowPositionY - position.y) > 0.5f;
+
+        if (!changed) return;
+
+        data.hasWindowPosition = true;
+        data.windowPositionX = position.x;
+        data.windowPositionY = position.y;
+
+        if (saveImmediately || Time.unscaledTime >= _nextWindowStateSaveTime)
+        {
+            _nextWindowStateSaveTime = Time.unscaledTime + 3f;
+            SaveToDisk();
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        CaptureWindowState(true);
     }
 
     // Speichern
@@ -176,6 +249,9 @@ public class SaveLoadHandler : MonoBehaviour
         public bool enableRandomAvatar = false;
 
         public bool enableLocomotion = false;
+        public bool hasWindowPosition = false;
+        public float windowPositionX = 0f;
+        public float windowPositionY = 0f;
 
 
         //ALARM

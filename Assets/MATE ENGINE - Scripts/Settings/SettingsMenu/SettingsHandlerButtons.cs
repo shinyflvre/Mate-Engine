@@ -64,21 +64,21 @@ public class SettingsHandlerButtons : MonoBehaviour
     public void CycleWindowSize()
     {
         var data = SaveLoadHandler.Instance.data;
-        var controller = uniWindowController ?? UniWindowController.current;
-        switch (data.windowSizeState)
-        {
-            case SaveLoadHandler.SettingsData.WindowSizeState.Normal:
-                data.windowSizeState = SaveLoadHandler.SettingsData.WindowSizeState.Big;
-                controller.windowSize = new Vector2(2048, 1536); break;
-            case SaveLoadHandler.SettingsData.WindowSizeState.Big:
-                data.windowSizeState = SaveLoadHandler.SettingsData.WindowSizeState.Small;
-                controller.windowSize = new Vector2(768, 512); break;
-            case SaveLoadHandler.SettingsData.WindowSizeState.Small:
-                data.windowSizeState = SaveLoadHandler.SettingsData.WindowSizeState.Normal;
-                controller.windowSize = new Vector2(1536, 1024); break;
-        }
+        data.windowSizeState = MateEngineWindowSize.Next(data.windowSizeState);
+        MateEngineWindowSize.Apply(ResolveWindowController(), data.windowSizeState);
         SaveLoadHandler.Instance.SaveToDisk();
     }
+
+    private UniWindowController ResolveWindowController()
+    {
+        if (uniWindowController != null) return uniWindowController;
+        if (uniWindowControllerObject != null)
+            uniWindowController = uniWindowControllerObject.GetComponent<UniWindowController>();
+        if (uniWindowController == null)
+            uniWindowController = FindFirstObjectByType<UniWindowController>();
+        return uniWindowController;
+    }
+
     private void OnRefreshAppsClicked()
     {
         var appManager = FindFirstObjectByType<AllowedAppsManager>();
