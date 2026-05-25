@@ -24,6 +24,10 @@ public class AvatarAnimatorController : MonoBehaviour
 
     public bool BlockDraggingOverride = false;
 
+    [Header("Drag Hit Test")]
+    public bool restrictDraggingToAvatarBounds = true;
+    [Min(0)] public int dragHitPaddingPx = 12;
+
     private static readonly int danceIndexParam = Animator.StringToHash("DanceIndex");
     private static readonly int isIdleParam = Animator.StringToHash("isIdle");
     private static readonly int isDraggingParam = Animator.StringToHash("isDragging");
@@ -39,6 +43,9 @@ public class AvatarAnimatorController : MonoBehaviour
     private int idleState, danceState;
     private float dragLockTimer;
     private bool mouseHeld;
+    private Camera dragCamera;
+    private Renderer[] dragRenderers;
+    private bool dragRenderersCached;
     public bool isDragging, isDancing, isIdle;
 
     [Header("Character Mode")]
@@ -161,10 +168,17 @@ public class AvatarAnimatorController : MonoBehaviour
         }
         if (Input.GetMouseButtonDown(0))
         {
-            SetDragging(true);
-            mouseHeld = true;
-            dragLockTimer = 0.30f;
-            SetDancing(false);
+            if (CanStartDragFromPointer())
+            {
+                SetDragging(true);
+                mouseHeld = true;
+                dragLockTimer = 0.30f;
+                SetDancing(false);
+            }
+            else
+            {
+                mouseHeld = false;
+            }
         }
         if (Input.GetMouseButtonUp(0)) mouseHeld = false;
         if (dragLockTimer > 0f)
@@ -206,6 +220,89 @@ public class AvatarAnimatorController : MonoBehaviour
             }
         }
     }
+
+    bool CanStartDragFromPointer()
+    {
+        return !restrictDraggingToAvatarBounds || IsPointerOverAvatar();
+    }
+
+    bool IsPointerOverAvatar()
+    {
+        Camera cam = GetDragCamera();
+        if (cam == null) return true;
+
+        CacheDragRenderers();
+        if (dragRenderers == null || dragRenderers.Length == 0) return true;
+
+        Vector3 mouse = Input.mousePosition;
+        bool checkedAnyRenderer = false;
+        for (int i = 0; i < dragRenderers.Length; i++)
+        {
+            Renderer r = dragRenderers[i];
+            if (r == null || !r.enabled || !r.gameObject.activeInHierarchy) continue;
+            if (r is ParticleSystemRenderer) continue;
+
+            Bounds bounds = r.bounds;
+            Vector3 ext = bounds.extents;
+            if (ext.sqrMagnitude <= 0.000001f) continue;
+
+            checkedAnyRenderer = true;
+            if (ScreenRectContainsRenderer(cam, bounds, mouse, dragHitPaddingPx)) return true;
+        }
+
+        return !checkedAnyRenderer;
+    }
+
+    Camera GetDragCamera()
+    {
+        if (dragCamera != null) return dragCamera;
+        dragCamera = Camera.main;
+        if (dragCamera == null) dragCamera = FindFirstObjectByType<Camera>();
+        return dragCamera;
+    }
+
+    void CacheDragRenderers()
+    {
+        if (dragRenderersCached && dragRenderers != null && dragRenderers.Length > 0) return;
+        dragRenderers = GetComponentsInChildren<Renderer>(true);
+        dragRenderersCached = true;
+    }
+
+    static bool ScreenRectContainsRenderer(Camera cam, Bounds bounds, Vector3 mouse, float padding)
+    {
+        Vector3 center = bounds.center;
+        Vector3 ext = bounds.extents;
+        float minX = float.PositiveInfinity;
+        float minY = float.PositiveInfinity;
+        float maxX = float.NegativeInfinity;
+        float maxY = float.NegativeInfinity;
+        bool projected = false;
+
+        for (int x = -1; x <= 1; x += 2)
+        {
+            for (int y = -1; y <= 1; y += 2)
+            {
+                for (int z = -1; z <= 1; z += 2)
+                {
+                    Vector3 screen = cam.WorldToScreenPoint(center + Vector3.Scale(ext, new Vector3(x, y, z)));
+                    if (screen.z <= 0.001f) continue;
+
+                    projected = true;
+                    minX = Mathf.Min(minX, screen.x);
+                    minY = Mathf.Min(minY, screen.y);
+                    maxX = Mathf.Max(maxX, screen.x);
+                    maxY = Mathf.Max(maxY, screen.y);
+                }
+            }
+        }
+
+        if (!projected) return true;
+        return mouse.x >= minX - padding &&
+            mouse.x <= maxX + padding &&
+            mouse.y >= minY - padding &&
+            mouse.y <= maxY + padding;
+    }
+
     void SetDragging(bool value)
     {
         isDragging = value;
