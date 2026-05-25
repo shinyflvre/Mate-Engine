@@ -4,7 +4,10 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/MATE ENGINE - Scenes/Mate Engine Main.unity
+    guid: 876492cd99230d346838e455d2bcb323
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: d3f0852c5c3650348931b7c6d71c6451, type: 2}
     com.unity.localization.settings: {fileID: 11400000, guid: 7553923a6077f8941b76cc27bea803e6, type: 2}
