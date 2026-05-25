@@ -96,6 +96,7 @@ public interface IDesktopWindowApi
     DesktopRect GetNearestMonitorRect(DesktopRect rect);
     DesktopRect GetMonitorRectForOwnWindow();
     DesktopRect GetTaskbarRectForOwnWindow();
+    bool IsLaunchpadVisible();
 }
 
 public static class DesktopWindowApi
@@ -201,6 +202,7 @@ abstract class DesktopWindowApiBase : IDesktopWindowApi
     }
 
     public virtual DesktopRect GetTaskbarRectForOwnWindow() => new DesktopRect();
+    public virtual bool IsLaunchpadVisible() => false;
 }
 
 class UnsupportedDesktopWindowApi : DesktopWindowApiBase
@@ -816,6 +818,8 @@ class MacDesktopWindowApi : DesktopWindowApiBase
         return Monitors;
     }
 
+    public override bool IsLaunchpadVisible() => MacNative.IsLaunchpadVisible();
+
     static bool IsSystemOrDesktopWindow(string ownerName, string title)
     {
         if (string.IsNullOrEmpty(ownerName)) return false;
@@ -909,6 +913,10 @@ class MacDesktopWindowApi : DesktopWindowApiBase
         [DllImport(Lib, EntryPoint = "MateDWGetMonitorRect")]
         [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool GetMonitorRect(int index, out NativeRect rect);
+
+        [DllImport(Lib, EntryPoint = "MateDWIsLaunchpadVisible")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool IsLaunchpadVisible();
     }
 }
 #endif

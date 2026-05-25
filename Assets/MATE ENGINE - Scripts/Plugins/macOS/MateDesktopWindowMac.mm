@@ -75,6 +75,34 @@ static CGRect CGBoundsForScreen(NSScreen *screen)
     return CGDisplayBounds((CGDirectDisplayID)[screenNumber unsignedIntValue]);
 }
 
+static double IntersectionArea(MateDWRect a, CGRect b)
+{
+    double left = fmax(a.left, CGRectGetMinX(b));
+    double top = fmax(a.top, CGRectGetMinY(b));
+    double right = fmin(a.right, CGRectGetMaxX(b));
+    double bottom = fmin(a.bottom, CGRectGetMaxY(b));
+    return fmax(0.0, right - left) * fmax(0.0, bottom - top);
+}
+
+static bool RectCoversAnyScreen(MateDWRect rect)
+{
+    double rectArea = fmax(0.0, rect.right - rect.left) * fmax(0.0, rect.bottom - rect.top);
+    if (rectArea <= 1.0) return false;
+
+    for (NSScreen *screen in [NSScreen screens])
+    {
+        CGRect bounds = CGBoundsForScreen(screen);
+        if (CGRectIsEmpty(bounds)) continue;
+
+        double screenArea = CGRectGetWidth(bounds) * CGRectGetHeight(bounds);
+        if (screenArea <= 1.0) continue;
+
+        double coverage = IntersectionArea(rect, bounds) / screenArea;
+        if (coverage >= 0.65) return true;
+    }
+    return false;
+}
+
 static NSScreen *ScreenForCGPoint(double x, double y, CGRect *cgBounds)
 {
     for (NSScreen *screen in [NSScreen screens])
@@ -138,6 +166,44 @@ extern "C" int MateDWCopyWindowInfos(MateDWWindowInfo *buffer, int capacity)
             if (FillInfo(window, &buffer[copied], copied)) copied++;
         }
         return copied;
+    }
+}
+
+extern "C" bool MateDWIsLaunchpadVisible(void)
+{
+    @autoreleasepool
+    {
+        NSArray *windows = CopyWindowInfoArray();
+        if (windows == nil) return false;
+
+        for (NSDictionary *window in windows)
+        {
+            NSString *ownerName = window[(id)kCGWindowOwnerName];
+            if (![ownerName isEqualToString:@"Dock"]) continue;
+
+            NSNumber *onScreen = window[(id)kCGWindowIsOnscreen];
+            if (onScreen != nil && ![onScreen boolValue]) continue;
+
+            NSNumber *alpha = window[(id)kCGWindowAlpha];
+            if (alpha != nil && [alpha floatValue] <= 0.05f) continue;
+
+            NSString *title = window[(id)kCGWindowName];
+            if (title != nil)
+            {
+                if ([title rangeOfString:@"Launchpad" options:NSCaseInsensitiveSearch].location != NSNotFound)
+                    return true;
+                if ([title isEqualToString:@"Desktop"] || [title isEqualToString:@"Dock"])
+                    continue;
+            }
+
+            NSNumber *layer = window[(id)kCGWindowLayer];
+            if (layer != nil && [layer intValue] < 0) continue;
+
+            MateDWRect rect;
+            if (!RectFromWindowDictionary(window, &rect)) continue;
+            if (RectCoversAnyScreen(rect)) return true;
+        }
+        return false;
     }
 }
 
