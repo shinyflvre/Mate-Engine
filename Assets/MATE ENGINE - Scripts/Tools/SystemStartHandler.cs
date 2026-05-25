@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -7,12 +9,15 @@ using Debug = UnityEngine.Debug;
 
 public class SystemStartHandler : MonoBehaviour
 {
+    private const string DefaultMacLaunchAgentLabel = "com.Shinymoon.MateEngineX.autostart";
+
     [Header("UI (Optional)")]
     public Toggle autoStartToggle;
     public TMP_Text checkmarkText;
 
     [Header("Settings")]
     public string runKeyName = "MateEngine";
+    public string macLaunchAgentLabel = DefaultMacLaunchAgentLabel;
     public string commandLineArgs = "";
 
     private bool _isApplyingUI;
@@ -33,7 +38,7 @@ public class SystemStartHandler : MonoBehaviour
             autoStartToggle.onValueChanged.AddListener(OnUIToggleChanged);
 
         LoadFromSaveWithoutNotify();
-        TryApplyRegistry(SaveLoadHandler.Instance.data.startWithWindows);
+        TryApplyAutostart(SaveLoadHandler.Instance.data.startWithWindows);
     }
 
     private void OnDestroy()
@@ -49,7 +54,7 @@ public class SystemStartHandler : MonoBehaviour
         SaveLoadHandler.Instance.data.startWithWindows = isOn;
         SaveLoadHandler.Instance.SaveToDisk();
 
-        TryApplyRegistry(isOn);
+        TryApplyAutostart(isOn);
         UpdateCheckmarkText(isOn);
     }
 
@@ -63,7 +68,7 @@ public class SystemStartHandler : MonoBehaviour
     {
         SaveLoadHandler.Instance.data.startWithWindows = isOn;
         SaveLoadHandler.Instance.SaveToDisk();
-        TryApplyRegistry(isOn);
+        TryApplyAutostart(isOn);
         ApplyToUIWithoutNotify(isOn);
     }
 
@@ -95,12 +100,23 @@ public class SystemStartHandler : MonoBehaviour
     private void UpdateCheckmarkText(bool isOn)
     {
         if (checkmarkText != null)
-            checkmarkText.text = isOn ? "☑ Start with Windows" : "☐ Start with Windows";
+            checkmarkText.text = isOn ? "☑ Start with System" : "☐ Start with System";
     }
 
-    // ---------------- Registry Handling ----------------
+    // ---------------- Autostart Handling ----------------
 
-    private void TryApplyRegistry(bool enable)
+    private void TryApplyAutostart(bool enable)
+    {
+#if UNITY_STANDALONE_WIN
+        TryApplyWindowsRegistry(enable);
+#elif UNITY_STANDALONE_OSX
+        TryApplyMacLaunchAgent(enable);
+#else
+        Debug.Log("[SystemStartHandler] Autostart disabled on this platform.");
+#endif
+    }
+
+    private void TryApplyWindowsRegistry(bool enable)
     {
 #if UNITY_STANDALONE_WIN
         if (Application.platform != RuntimePlatform.WindowsPlayer &&
@@ -151,6 +167,199 @@ public class SystemStartHandler : MonoBehaviour
 #else
         Debug.Log("[SystemStartHandler] Registry disabled on this platform.");
 #endif
+    }
+
+    private void TryApplyMacLaunchAgent(bool enable)
+    {
+#if UNITY_STANDALONE_OSX
+#if UNITY_EDITOR
+        Debug.Log("[SystemStartHandler] macOS LaunchAgent is skipped in the Unity Editor.");
+        return;
+#else
+        try
+        {
+            string plistPath = GetMacLaunchAgentPath();
+            if (string.IsNullOrEmpty(plistPath))
+            {
+                Debug.LogWarning("[SystemStartHandler] LaunchAgent path empty. Skipping autostart write.");
+                return;
+            }
+
+            if (!enable)
+            {
+                if (File.Exists(plistPath)) File.Delete(plistPath);
+                Debug.Log("[SystemStartHandler] Disabled autostart (LaunchAgent): " + plistPath);
+                return;
+            }
+
+            string appPath = GetMacAppBundlePath();
+            if (string.IsNullOrEmpty(appPath) || !Directory.Exists(appPath))
+            {
+                Debug.LogWarning("[SystemStartHandler] App bundle path empty or missing. Skipping LaunchAgent write: " + appPath);
+                return;
+            }
+
+            string dir = Path.GetDirectoryName(plistPath);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+            File.WriteAllText(plistPath, BuildMacLaunchAgentPlist(appPath), Encoding.UTF8);
+            Debug.Log("[SystemStartHandler] Enabled autostart (LaunchAgent): " + plistPath + " -> " + appPath);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("[SystemStartHandler] LaunchAgent write failed: " + ex.Message);
+        }
+#endif
+#else
+        Debug.Log("[SystemStartHandler] LaunchAgent disabled on this platform.");
+#endif
+    }
+
+    private string GetMacLaunchAgentPath()
+    {
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+        if (string.IsNullOrEmpty(home)) return string.Empty;
+        string label = GetMacLaunchAgentLabel();
+        return Path.Combine(home, "Library", "LaunchAgents", label + ".plist");
+    }
+
+    private string GetMacAppBundlePath()
+    {
+#if UNITY_EDITOR
+        return string.Empty;
+#else
+        string dataPath = Application.dataPath;
+        if (!string.IsNullOrEmpty(dataPath))
+        {
+            var dir = new DirectoryInfo(dataPath);
+            while (dir != null)
+            {
+                if (dir.Name.EndsWith(".app", StringComparison.OrdinalIgnoreCase))
+                    return dir.FullName;
+                dir = dir.Parent;
+            }
+        }
+
+        try
+        {
+            string proc = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+            if (!string.IsNullOrEmpty(proc))
+            {
+                var dir = new FileInfo(proc).Directory;
+                while (dir != null)
+                {
+                    if (dir.Name.EndsWith(".app", StringComparison.OrdinalIgnoreCase))
+                        return dir.FullName;
+                    dir = dir.Parent;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning("[SystemStartHandler] Failed to resolve app bundle path: " + ex.Message);
+        }
+        return string.Empty;
+#endif
+    }
+
+    private string BuildMacLaunchAgentPlist(string appBundlePath)
+    {
+        var args = SplitCommandLineArgs(commandLineArgs);
+        var sb = new StringBuilder();
+        sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        sb.AppendLine("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
+        sb.AppendLine("<plist version=\"1.0\">");
+        sb.AppendLine("<dict>");
+        sb.AppendLine("  <key>Label</key>");
+        sb.AppendLine("  <string>" + EscapePlistString(GetMacLaunchAgentLabel()) + "</string>");
+        sb.AppendLine("  <key>LimitLoadToSessionType</key>");
+        sb.AppendLine("  <string>Aqua</string>");
+        sb.AppendLine("  <key>ProgramArguments</key>");
+        sb.AppendLine("  <array>");
+        sb.AppendLine("    <string>/usr/bin/open</string>");
+        sb.AppendLine("    <string>" + EscapePlistString(appBundlePath) + "</string>");
+        if (args.Count > 0)
+        {
+            sb.AppendLine("    <string>--args</string>");
+            for (int i = 0; i < args.Count; i++)
+                sb.AppendLine("    <string>" + EscapePlistString(args[i]) + "</string>");
+        }
+        sb.AppendLine("  </array>");
+        sb.AppendLine("  <key>RunAtLoad</key>");
+        sb.AppendLine("  <true/>");
+        sb.AppendLine("</dict>");
+        sb.AppendLine("</plist>");
+        return sb.ToString();
+    }
+
+    private string GetMacLaunchAgentLabel()
+    {
+        if (!string.IsNullOrWhiteSpace(macLaunchAgentLabel))
+            return SanitizeLaunchAgentLabel(macLaunchAgentLabel);
+
+        string appId = Application.identifier;
+        if (!string.IsNullOrWhiteSpace(appId))
+            return SanitizeLaunchAgentLabel(appId + ".autostart");
+
+        return DefaultMacLaunchAgentLabel;
+    }
+
+    private static string SanitizeLaunchAgentLabel(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return DefaultMacLaunchAgentLabel;
+        var sb = new StringBuilder(value.Length);
+        for (int i = 0; i < value.Length; i++)
+        {
+            char c = value[i];
+            bool valid = char.IsLetterOrDigit(c) || c == '.' || c == '-' || c == '_';
+            sb.Append(valid ? c : '.');
+        }
+        string label = sb.ToString().Trim('.');
+        return string.IsNullOrEmpty(label) ? DefaultMacLaunchAgentLabel : label;
+    }
+
+    private static string EscapePlistString(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return string.Empty;
+        return value
+            .Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;")
+            .Replace("\"", "&quot;")
+            .Replace("'", "&apos;");
+    }
+
+    private static List<string> SplitCommandLineArgs(string args)
+    {
+        var result = new List<string>();
+        if (string.IsNullOrWhiteSpace(args)) return result;
+
+        var sb = new StringBuilder();
+        bool inQuotes = false;
+        for (int i = 0; i < args.Length; i++)
+        {
+            char c = args[i];
+            if (c == '"')
+            {
+                inQuotes = !inQuotes;
+                continue;
+            }
+
+            if (char.IsWhiteSpace(c) && !inQuotes)
+            {
+                if (sb.Length > 0)
+                {
+                    result.Add(sb.ToString());
+                    sb.Length = 0;
+                }
+                continue;
+            }
+
+            sb.Append(c);
+        }
+
+        if (sb.Length > 0) result.Add(sb.ToString());
+        return result;
     }
 
     private string GetCurrentExecutablePathQuoted()
