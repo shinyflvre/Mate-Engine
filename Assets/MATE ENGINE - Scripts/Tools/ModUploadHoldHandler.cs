@@ -182,7 +182,7 @@ public class ModUploadHoldHandler : MonoBehaviour, IPointerDownHandler, IPointer
 
         var paths = StandaloneFileBrowser.OpenFilePanel(
             "Select Thumbnail (PNG/JPG, Max 2MB)",
-            "",
+            MateEnginePaths.DefaultImportDirectory,
             new[] { new ExtensionFilter("Image", "png", "jpg", "jpeg") },
             false
         );
@@ -197,7 +197,7 @@ public class ModUploadHoldHandler : MonoBehaviour, IPointerDownHandler, IPointer
         string ext = Path.GetExtension(src).ToLowerInvariant();
         if (ext != ".png" && ext != ".jpg" && ext != ".jpeg") { SetError("Unsupported format"); return false; }
 
-        string thumbs = Path.Combine(Application.persistentDataPath, "Thumbnails");
+        string thumbs = MateEnginePaths.ThumbnailsDir;
         Directory.CreateDirectory(thumbs);
 
         string baseName = Path.GetFileNameWithoutExtension(modBtn.filePath);
@@ -242,7 +242,7 @@ public class ModUploadHoldHandler : MonoBehaviour, IPointerDownHandler, IPointer
     string GetDefaultThumbPath()
     {
         string name = string.IsNullOrEmpty(modBtn?.filePath) ? "" : Path.GetFileNameWithoutExtension(modBtn.filePath);
-        return Path.Combine(Application.persistentDataPath, "Thumbnails", name + "_thumb.png");
+        return Path.Combine(MateEnginePaths.ThumbnailsDir, name + "_thumb.png");
     }
 
     void SetInteractable(bool v)

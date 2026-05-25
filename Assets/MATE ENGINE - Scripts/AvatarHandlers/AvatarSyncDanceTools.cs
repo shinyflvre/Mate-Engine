@@ -22,9 +22,7 @@ namespace CustomDancePlayer
             if (handler != null && !string.IsNullOrEmpty(handler.syncFileName))
                 fileName = handler.syncFileName;
 
-            var dir = Path.Combine(Application.persistentDataPath, "Sync");
-            try { Directory.CreateDirectory(dir); } catch { }
-            busPath = Path.Combine(dir, fileName);
+            busPath = Path.Combine(MateEnginePaths.SyncDir, fileName);
             busTmpPath = busPath + ".tmp";
         }
 
