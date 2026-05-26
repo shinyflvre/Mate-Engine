@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
@@ -56,6 +57,23 @@ public class SaveLoadHandler : MonoBehaviour
         {
             limiter.targetFPS = data.fpsLimit;
             limiter.ApplyFPSLimit();
+        }
+    }
+
+    private void Start()
+    {
+        StartCoroutine(RestoreWindowSizeAfterStartup());
+    }
+
+    private IEnumerator RestoreWindowSizeAfterStartup()
+    {
+        yield return null;
+        for (int i = 0; i < 60; i++)
+        {
+            if (data != null && MateEngineWindowSize.TryApplyToExistingController(data.windowSizeState))
+                yield break;
+
+            yield return null;
         }
     }
 
