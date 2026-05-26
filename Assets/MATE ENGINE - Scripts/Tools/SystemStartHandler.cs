@@ -9,7 +9,9 @@ using Debug = UnityEngine.Debug;
 
 public class SystemStartHandler : MonoBehaviour
 {
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
     private const string DefaultMacLaunchAgentLabel = "com.Shinymoon.MateEngineX.autostart";
+#endif
 
     [Header("UI (Optional)")]
     public Toggle autoStartToggle;
@@ -17,7 +19,9 @@ public class SystemStartHandler : MonoBehaviour
 
     [Header("Settings")]
     public string runKeyName = "MateEngine";
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
     public string macLaunchAgentLabel = DefaultMacLaunchAgentLabel;
+#endif
     public string commandLineArgs = "";
 
     private bool _isApplyingUI;
@@ -169,9 +173,9 @@ public class SystemStartHandler : MonoBehaviour
 #endif
     }
 
+#if UNITY_STANDALONE_OSX
     private void TryApplyMacLaunchAgent(bool enable)
     {
-#if UNITY_STANDALONE_OSX
 #if UNITY_EDITOR
         Debug.Log("[SystemStartHandler] macOS LaunchAgent is skipped in the Unity Editor.");
         return;
@@ -209,9 +213,6 @@ public class SystemStartHandler : MonoBehaviour
         {
             Debug.LogError("[SystemStartHandler] LaunchAgent write failed: " + ex.Message);
         }
-#endif
-#else
-        Debug.Log("[SystemStartHandler] LaunchAgent disabled on this platform.");
 #endif
     }
 
@@ -361,6 +362,7 @@ public class SystemStartHandler : MonoBehaviour
         if (sb.Length > 0) result.Add(sb.ToString());
         return result;
     }
+#endif
 
     private string GetCurrentExecutablePathQuoted()
     {

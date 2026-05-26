@@ -1,5 +1,7 @@
-# MateEngine for Linux (Unoffical)
+# MateEngine Desktop Compatibility Build
 Github: https://github.com/Marksonthegamer/Mate-Engine-Linux-Port
+
+This build keeps the existing Windows desktop behavior intact while adding focused macOS support, including native window sitting, Retina-aware window sizing, platform-correct app data paths, and login startup support.
 
 # Support MateEngine on Steam!
 Buy on Steam: https://store.steampowered.com/app/3625270/MateEngine/
@@ -135,6 +137,7 @@ Comparison between "Desktop Mate" "Phase Pal (Playtest Alpha)" "MateEngine"
 | Sleep                    | ❌           | ❌        | ✅         |
 | Compatible with Games    | ❌           | ❌        | ✅         |
 | Start with PC    | ❌           | ❌        | ✅         |
+| macOS Desktop Support    | ❌           | ❌        | ✅         |
 | Blendshape Edit Support    | ❌           | ❌        | ✅         |
 | Cosmetic Items    | ❌           | ❌        | ✅         |
 | MMD Music Animation Player    | ❌           | ❌        | ✅         |
@@ -187,11 +190,26 @@ Mate Engine offers smoother animation transitions than Desktop Mate, avoiding th
 
 ---
 
+## macOS Support
+
+Mate Engine now includes focused macOS compatibility work for desktop builds:
+
+- **Native macOS window integration** – CoreGraphics/AppKit support is used for visible window metadata, Z-order, window bounds, monitor bounds, and the app window controls needed by window sitting.
+- **Model import on macOS** – `.vrm` and `.me` file selection works through the macOS-compatible file picker path.
+- **macOS app storage paths** – runtime settings, imported models, thumbnails, mods, and temporary files use platform-appropriate persistent/cache directories.
+- **HiDPI-aware window sizing** – desktop window size presets and saved window positions are adjusted for Retina displays.
+- **Launchpad-aware sitting behavior** – when the avatar is sitting on a window, macOS Launchpad overlays are detected and the sitting overlay is temporarily lowered so it does not float above Launchpad.
+- **Start with System on macOS** – macOS builds can register a LaunchAgent for login startup.
+
+The macOS window metadata path is based on CoreGraphics/AppKit and does not require ScreenCaptureKit streaming.
+
+---
+
 ## How to Use
 
 1. Go to the **Releases** section (on the right-hand panel).  
 2. Download the ZIP file marked as a public release (not source code).  
-3. Unzip and run `MateEngineX.exe`.  
+3. Unzip and run `MateEngineX.exe` on Windows or the `.app` bundle on macOS.
 4. Right-click the avatar or press `M` to open the settings menu.
 
 ---
@@ -315,6 +333,7 @@ If you like it, share it or support it — but most of all, enjoy it.
 | アンチチート安全        | ❌            | ❌         | ✅          |
 | スリープ機能          | ❌            | ❌         | ✅          |
 | ゲームとの互換性        | ❌            | ❌         | ✅          |
+| macOS デスクトップ対応   | ❌            | ❌         | ✅          |
 
 ---
 
@@ -359,6 +378,21 @@ Desktop Mateのようなカクつきや状態切り替えのバグがなく、�
 
 ---
 
+## macOS サポート
+
+Mate Engine は macOS デスクトップビルド向けの互換性改善を含みます。
+
+- **macOS ネイティブのウィンドウ連携** – CoreGraphics/AppKit により、表示中のウィンドウ情報、Z順、ウィンドウ矩形、モニター矩形、アプリ自身のウィンドウ制御を扱います。
+- **macOS でのモデル読み込み** – `.vrm` / `.me` ファイルを macOS 対応のファイル選択から読み込めます。
+- **macOS 標準の保存先** – 設定、インポート済みモデル、サムネイル、Mod、キャッシュはプラットフォームに合った永続/一時保存先を使います。
+- **Retina / HiDPI 対応のウィンドウサイズ** – サイズプリセットと前回のウィンドウ位置を macOS 向けに調整します。
+- **Launchpad 対応** – ウィンドウ上に座っている時、Launchpad 表示中は最前面表示を一時的に下げます。
+- **ログイン時起動** – macOS では LaunchAgent により「システム起動時に開始」をサポートします。
+
+macOS のウィンドウ情報取得は CoreGraphics/AppKit ベースで、ScreenCaptureKit のストリーミングには依存しません。
+
+---
+
 ## 主な機能
 
 - **アイドルアニメーション** – デスクトップ上でループ再生  
@@ -383,7 +417,7 @@ Desktop Mateのようなカクつきや状態切り替えのバグがなく、�
 ## 使い方
 
 1. 右の「Releases」セクションから最新版ZIPをダウンロード  
-2. `MateEngineX.exe` を展開し、実行  
+2. Windowsでは `MateEngineX.exe`、macOSでは `.app` バンドルを展開し、実行
 3. ペットを右クリック、または `M` を押してオプションメニューを開く
 
 ---
@@ -526,6 +560,7 @@ Mate Engineの開発に参加するのはとても簡単です：
 | 睡眠功能                | ❌           | ❌        | ✅         |
 | 游戏兼容性              | ❌           | ❌        | ✅         |
 | 随电脑启动              | ❌           | ❌        | ✅         |
+| macOS桌面支持           | ❌           | ❌        | ✅         |
 | 表情编辑支持            | ❌           | ❌        | ✅         |
 ---
 
@@ -566,6 +601,21 @@ Mate Engine提供比Desktop Mate更流畅的动画过渡，避免了商业替代
 
 ---
 
+## macOS 支持
+
+Mate Engine 现在包含面向 macOS 桌面版本的兼容性改进：
+
+- **macOS 原生窗口集成** – 使用 CoreGraphics/AppKit 获取可见窗口信息、Z 序、窗口矩形、显示器矩形，并控制 Mate Engine 自身窗口。
+- **macOS 模型导入** – `.vrm` / `.me` 文件可通过 macOS 兼容的文件选择路径导入。
+- **符合 macOS 规范的工作文件夹** – 设置、导入模型、缩略图、Mod、缓存等运行时文件会存放在平台规范的持久化/缓存目录中。
+- **Retina / HiDPI 窗口尺寸适配** – 调整窗口大小预设，并保存/恢复上次窗口位置。
+- **Launchpad 特判** – 角色处于 sit-on-window 状态时，检测 Launchpad 覆盖层并临时降低置顶，避免角色浮在 Launchpad 上。
+- **随系统启动** – macOS 版本通过 LaunchAgent 支持登录时启动。
+
+当前 macOS 窗口信息获取基于 CoreGraphics/AppKit，不依赖 ScreenCaptureKit 串流。
+
+---
+
 ## 主要功能
 
 - **待机动画** – 在桌面上循环播放
@@ -583,7 +633,7 @@ Mate Engine提供比Desktop Mate更流畅的动画过渡，避免了商业替代
 
 1. 前往右侧的**Releases**部分。
 2. 下载标记为公开发布的ZIP文件（非源代码）。
-3. 解压缩并运行`MateEngineX.exe`。
+3. 解压缩并在 Windows 上运行`MateEngineX.exe`，或在 macOS 上运行`.app`。
 4. 右键点击角色或按`M`键打开设置菜单。
 
 ---
@@ -617,4 +667,3 @@ Mate Engine提供比Desktop Mate更流畅的动画过渡，避免了商业替代
 如果您喜欢它，请分享或支持它 —— 但最重要的是，享受它。
 
 --------------------------------------------------------------------
-

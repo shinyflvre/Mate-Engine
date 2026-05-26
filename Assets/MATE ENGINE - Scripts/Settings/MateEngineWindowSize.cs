@@ -4,10 +4,13 @@ using UnityEngine;
 public static class MateEngineWindowSize
 {
     private static readonly Vector2 SmallSize = new Vector2(768f, 512f);
-    private static readonly Vector2 WindowsNormalSize = new Vector2(1536f, 1024f);
-    private static readonly Vector2 WindowsBigSize = new Vector2(2048f, 1536f);
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
     private static readonly Vector2 MacNormalSize = new Vector2(960f, 640f);
     private static readonly Vector2 MacBigSize = new Vector2(1152f, 768f);
+#else
+    private static readonly Vector2 WindowsNormalSize = new Vector2(1536f, 1024f);
+    private static readonly Vector2 WindowsBigSize = new Vector2(2048f, 1536f);
+#endif
 
     public static SaveLoadHandler.SettingsData.WindowSizeState Next(SaveLoadHandler.SettingsData.WindowSizeState state)
     {
