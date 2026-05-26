@@ -107,15 +107,32 @@ public class VRMLoader : MonoBehaviour
 
         isLoading = true;
         var extensions = new[] { new ExtensionFilter("Model Files", "vrm", "me", "prefab") };
+#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Select Model File", MateEnginePaths.DefaultImportDirectory, "", false);
+#else
         string[] paths = StandaloneFileBrowser.OpenFilePanel("Select Model File", "", extensions, false);
+#endif
         if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
-            LoadVRM(paths[0]);
+        {
+            if (!IsSupportedModelFile(paths[0]))
+            {
+                Debug.LogWarning("[VRMLoader] Unsupported model file: " + paths[0]);
+                isLoading = false;
+                return;
+            }
+
+            LoadVRM(PrepareImportedModelPath(paths[0]));
+        }
 
         isLoading = false;
     }
 
     public async void LoadVRM(string path)
     {
+        if (string.IsNullOrWhiteSpace(path)) return;
+
+        path = PrepareImportedModelPath(path);
+
         if (path.EndsWith(".me", StringComparison.OrdinalIgnoreCase))
         {
             LoadAssetBundleModel(path);
@@ -514,6 +531,34 @@ public class VRMLoader : MonoBehaviour
 #endif
         if (!File.Exists(path) && !path.EndsWith(".vrm") && !path.EndsWith(".me"))
             return true;
+        return false;
+    }
+
+    private string PrepareImportedModelPath(string path)
+    {
+#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+        if (IsSupportedModelFile(path))
+            return MateEnginePaths.ImportModelToManagedStorage(path);
+#endif
+        return path;
+    }
+
+    private bool IsSupportedModelFile(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        string extension = Path.GetExtension(path);
+        if (extension.Equals(".vrm", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (extension.Equals(".me", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+#if UNITY_EDITOR
+        if (extension.Equals(".prefab", StringComparison.OrdinalIgnoreCase))
+            return true;
+#endif
+
         return false;
     }
 
