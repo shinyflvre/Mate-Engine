@@ -128,11 +128,6 @@ public class AvatarWindowHandler : MonoBehaviour
     int _targetQuadWindowWidth, _targetQuadWindowHeight;
     bool _haveTargetOccluderDepthOffset;
     float _targetOccluderDepthOffset;
-#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
-    bool _windowSitSuppressedForLaunchpad;
-    bool _cachedLaunchpadVisible;
-    float _nextLaunchpadCheckTime;
-#endif
     static readonly int[] TRI = { 0, 1, 2, 0, 2, 3 };
     readonly Vector3[] verts4 = new Vector3[4];
     readonly Vector3[] verts4Other = new Vector3[4];
@@ -218,14 +213,6 @@ public class AvatarWindowHandler : MonoBehaviour
         if (isWindowSitNow && !wasSitting) animator.SetFloat(windowSitIndexParam, UnityEngine.Random.Range(0, totalWindowSitAnimations));
         wasSitting = isWindowSitNow;
 
-#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
-        if (HandleLaunchpadWhileWindowSitting(isWindowSitNow))
-        {
-            wasDragging = controller.isDragging;
-            return;
-        }
-#endif
-
         float enumHz = (controller.isDragging || snappedWindowId != IntPtr.Zero) ? Mathf.Max(1f, windowEnumFPS) : Mathf.Max(1f, windowEnumIdleFPS);
         if (Time.unscaledTime >= _nextEnumTime)
         {
@@ -303,14 +290,6 @@ public class AvatarWindowHandler : MonoBehaviour
     }
     void LateUpdate()
     {
-#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
-        if (_windowSitSuppressedForLaunchpad)
-        {
-            SetTargetQuadActive(false);
-            SetOtherQuadsActive(0);
-            return;
-        }
-#endif
         UpdateOccluderQuadsFrameSync();
     }
     bool DraggedPastSnapThreshold()
@@ -384,11 +363,6 @@ public class AvatarWindowHandler : MonoBehaviour
     void ClearSnapAndHide(bool fromUnsnap = false)
     {
         ClearPendingSnap();
-#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
-        RestoreLaunchpadSuppression(false);
-        _cachedLaunchpadVisible = false;
-        _nextLaunchpadCheckTime = 0f;
-#endif
         _havePrevSnapRect = false;
         _snapSmoothingActive = false;
         _snapVelX = _snapVelY = 0f;
@@ -406,54 +380,6 @@ public class AvatarWindowHandler : MonoBehaviour
         _guard = _latch = 0;
         activeOccluders.Clear();
     }
-
-#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
-    bool HandleLaunchpadWhileWindowSitting(bool isWindowSitNow)
-    {
-        if (snappedWindowId == IntPtr.Zero || !isWindowSitNow)
-        {
-            RestoreLaunchpadSuppression(false);
-            _cachedLaunchpadVisible = false;
-            _nextLaunchpadCheckTime = 0f;
-            return false;
-        }
-
-        bool launchpadVisible = IsLaunchpadVisibleThrottled();
-        if (!launchpadVisible)
-        {
-            RestoreLaunchpadSuppression(true);
-            return false;
-        }
-
-        if (!_windowSitSuppressedForLaunchpad)
-        {
-            _windowSitSuppressedForLaunchpad = true;
-            LogWindowSitDiagnostic("launchpad", "temporarily disabling topmost while Launchpad is visible");
-        }
-
-        SetTopMost(false);
-        SetTargetQuadActive(false);
-        SetOtherQuadsActive(0);
-        return true;
-    }
-
-    void RestoreLaunchpadSuppression(bool restoreTopMost)
-    {
-        bool wasSuppressed = _windowSitSuppressedForLaunchpad;
-        _windowSitSuppressedForLaunchpad = false;
-        if (wasSuppressed && restoreTopMost) SetTopMost(true);
-    }
-
-    bool IsLaunchpadVisibleThrottled()
-    {
-        if (Time.unscaledTime >= _nextLaunchpadCheckTime)
-        {
-            _cachedLaunchpadVisible = windowApi.IsLaunchpadVisible();
-            _nextLaunchpadCheckTime = Time.unscaledTime + 0.25f;
-        }
-        return _cachedLaunchpadVisible;
-    }
-#endif
 
     void ClearPendingSnap()
     {
