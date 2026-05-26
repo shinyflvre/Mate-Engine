@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 public class AvatarWindowHandler : MonoBehaviour
 {
     [Header("Snap Safety")]
@@ -993,3 +995,23 @@ public class AvatarWindowHandler : MonoBehaviour
     const uint SWP_NOACTIVATE = 0x0010;
 #endif
 }
+#else
+public class AvatarWindowHandler : MonoBehaviour
+{
+    [Range(-0.05f, 0.05f)] public float windowSitYOffset = 0f;
+
+    public void ForceExitWindowSitting()
+    {
+        var animator = GetComponent<Animator>();
+        if (animator == null) return;
+        animator.SetBool("isWindowSit", false);
+        animator.SetBool("isTaskbarSit", false);
+    }
+
+    public void SetBaseOffset(float v) { }
+    public void SetBaseScale(float v) { }
+    public float GetBaseOffset() => 0f;
+    public float GetBaseScale() => 1f;
+    public float GetScaleCompPx() => 0f;
+}
+#endif
