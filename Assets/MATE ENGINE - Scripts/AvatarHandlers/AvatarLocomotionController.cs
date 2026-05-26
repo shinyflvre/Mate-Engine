@@ -1,6 +1,4 @@
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 public sealed class AvatarLocomotionController : MonoBehaviour
@@ -51,66 +49,8 @@ public sealed class AvatarLocomotionController : MonoBehaviour
     public bool DrawBlockingDebug = true;
     [Range(0f, 1f)] public float DebugOverlayAlpha = 0.55f;
 
-    const uint SWP_NOSIZE = 0x0001;
-    const uint SWP_NOZORDER = 0x0004;
-    const uint SWP_NOACTIVATE = 0x0010;
-
-    const uint GW_OWNER = 4;
-
-    const uint MONITOR_DEFAULTTONEAREST = 2;
-
-    const int SM_XVIRTUALSCREEN = 76;
-    const int SM_CXVIRTUALSCREEN = 78;
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct RECT
-    {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct POINT
-    {
-        public int X;
-        public int Y;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    struct MONITORINFO
-    {
-        public int cbSize;
-        public RECT rcMonitor;
-        public RECT rcWork;
-        public uint dwFlags;
-    }
-
-    [DllImport("user32.dll")] static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
-    delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-
-    [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr hWnd);
-    [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
-    [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
-    [DllImport("user32.dll")] static extern int GetSystemMetrics(int nIndex);
-
-    [DllImport("user32.dll", SetLastError = true)] static extern int GetWindowTextLength(IntPtr hWnd);
-    [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-    [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
-    [DllImport("user32.dll")] static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
-    [DllImport("user32.dll")] static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
-
-    [DllImport("user32.dll")] static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
-    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)] static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
-
     int _baseLayerIndex = 0;
-    IntPtr _hwnd = IntPtr.Zero;
+    IDesktopWindowApi _windowApi;
 
     bool _walking;
     int _dir;
@@ -141,9 +81,6 @@ public sealed class AvatarLocomotionController : MonoBehaviour
 
     void Update()
     {
-#if !(UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
-        return;
-#else
         if (!EnableLocomotion)
         {
             StopWalking();
@@ -155,17 +92,13 @@ public sealed class AvatarLocomotionController : MonoBehaviour
 
         if (Animator == null) return;
 
-        if (_hwnd == IntPtr.Zero) CacheWindowHandle();
-        if (_hwnd == IntPtr.Zero) return;
+        if (_windowApi == null) CacheWindowHandle();
+        if (_windowApi == null || !_windowApi.IsSupported || !_windowApi.RefreshOwnWindow()) return;
 
-        if (OnlyMoveWhenFocused)
+        if (OnlyMoveWhenFocused && !_windowApi.IsOwnWindowForeground())
         {
-            IntPtr fg = GetForegroundWindow();
-            if (fg != _hwnd)
-            {
-                if (_walking) StopWalking();
-                return;
-            }
+            if (_walking) StopWalking();
+            return;
         }
 
         if (DebugTriggerWalkNow)
@@ -210,7 +143,6 @@ public sealed class AvatarLocomotionController : MonoBehaviour
         }
 
         StepWalk();
-#endif
     }
 
     void OnGUI()
@@ -442,7 +374,7 @@ public sealed class AvatarLocomotionController : MonoBehaviour
     {
         if (!_walking) return;
 
-        if (!GetWindowRect(_hwnd, out RECT r))
+        if (_windowApi == null || !_windowApi.TryGetOwnWindowRect(out DesktopRect r))
         {
             StopWalking();
             ScheduleNextDecision(false);
@@ -451,12 +383,10 @@ public sealed class AvatarLocomotionController : MonoBehaviour
 
         int w = r.Right - r.Left;
 
-        if (!TryGetMonitorBounds(_hwnd, out int monitorLeft, out int monitorRight))
+        if (!TryGetMonitorBounds(out int monitorLeft, out int monitorRight))
         {
-            int vx = GetSystemMetrics(SM_XVIRTUALSCREEN);
-            int vw = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-            monitorLeft = vx;
-            monitorRight = vx + vw;
+            monitorLeft = r.Left;
+            monitorRight = r.Right;
         }
 
         int minX;
@@ -494,7 +424,7 @@ public sealed class AvatarLocomotionController : MonoBehaviour
 
         int yKeep = r.Top;
 
-        if (!SetWindowPos(_hwnd, IntPtr.Zero, clampedX, yKeep, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE))
+        if (!_windowApi.TryMoveOwnWindowPosition(clampedX, yKeep))
         {
             StopWalking();
             ScheduleNextDecision(false);
@@ -547,57 +477,22 @@ public sealed class AvatarLocomotionController : MonoBehaviour
 
     void CacheWindowHandle()
     {
-#if !(UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
-        _hwnd = IntPtr.Zero;
-#else
-        uint pid = (uint)Process.GetCurrentProcess().Id;
-        IntPtr best = IntPtr.Zero;
-        long bestArea = -1;
-
-        EnumWindows((hWnd, lParam) =>
-        {
-            if (!IsWindowVisible(hWnd)) return true;
-            if (GetWindow(hWnd, GW_OWNER) != IntPtr.Zero) return true;
-
-            GetWindowThreadProcessId(hWnd, out uint wp);
-            if (wp != pid) return true;
-
-            int len = GetWindowTextLength(hWnd);
-            if (len <= 0) return true;
-
-            if (!GetWindowRect(hWnd, out RECT rr)) return true;
-
-            long area = (long)(rr.Right - rr.Left) * (long)(rr.Bottom - rr.Top);
-            if (area > bestArea)
-            {
-                bestArea = area;
-                best = hWnd;
-            }
-
-            return true;
-        }, IntPtr.Zero);
-
-        _hwnd = best;
-#endif
+        _windowApi = DesktopWindowApi.Current;
+        _windowApi?.RefreshOwnWindow();
     }
 
-    bool TryGetMonitorBounds(IntPtr hwnd, out int left, out int right)
+    bool TryGetMonitorBounds(out int left, out int right)
     {
         left = 0;
         right = 0;
 
-        IntPtr mon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-        if (mon == IntPtr.Zero) return false;
+        if (_windowApi == null) return false;
+        DesktopRect monitorRect = _windowApi.GetMonitorRectForOwnWindow();
+        if (monitorRect.IsEmpty) return false;
 
-        MONITORINFO mi = new MONITORINFO();
-        mi.cbSize = Marshal.SizeOf(typeof(MONITORINFO));
-
-        if (!GetMonitorInfo(mon, ref mi))
-            return false;
-
-        left = mi.rcMonitor.Left;
-        right = mi.rcMonitor.Right;
-        return true;
+        left = monitorRect.Left;
+        right = monitorRect.Right;
+        return right > left;
     }
 
     struct BlockingInfo
@@ -618,35 +513,29 @@ public sealed class AvatarLocomotionController : MonoBehaviour
     {
         bi = default;
 
-        if (_hwnd == IntPtr.Zero) return false;
+        if (_windowApi == null || !_windowApi.RefreshOwnWindow()) return false;
 
         Camera cam = BoundsCamera != null ? BoundsCamera : Camera.main;
         if (cam == null) return false;
 
-        if (!GetWindowRect(_hwnd, out RECT winRect))
+        if (!_windowApi.TryGetOwnWindowRect(out DesktopRect winRect))
             return false;
 
-        if (!GetClientRect(_hwnd, out RECT clientRect))
+        if (!_windowApi.TryGetOwnClientRect(out DesktopRect clientRect))
             return false;
 
-        POINT pt = new POINT { X = 0, Y = 0 };
-        if (!ClientToScreen(_hwnd, ref pt))
-            return false;
+        int clientX = clientRect.Left;
 
-        int clientX = pt.X;
-
-        int clientW = clientRect.Right - clientRect.Left;
+        int clientW = clientRect.Width;
         if (clientW <= 0) return false;
         if (Screen.width <= 0 || Screen.height <= 0) return false;
 
         float scaleX = clientW / (float)Screen.width;
 
-        if (!TryGetMonitorBounds(_hwnd, out int monitorLeft, out int monitorRight))
+        if (!TryGetMonitorBounds(out int monitorLeft, out int monitorRight))
         {
-            int vx = GetSystemMetrics(SM_XVIRTUALSCREEN);
-            int vw = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-            monitorLeft = vx;
-            monitorRight = vx + vw;
+            monitorLeft = winRect.Left;
+            monitorRight = winRect.Right;
         }
 
         if (!TryGetAvatarScreenBoundsUnity(cam, out float minXU, out float maxXU))

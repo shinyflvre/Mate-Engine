@@ -1,8 +1,6 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 public class SettingsMenuPosition : MonoBehaviour
 {
@@ -27,21 +25,8 @@ public class SettingsMenuPosition : MonoBehaviour
     [Header("Monitor refresh (sec)")]
     public float monitorRefreshInterval = 2f;
 
-    private IntPtr unityHWND;
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct RECT { public int left, top, right, bottom; }
-
-    private delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
-
-    [DllImport("user32.dll")]
-    private static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
-
-    [DllImport("user32.dll")]
-    private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-    private readonly List<RECT> monitorRects = new List<RECT>();
-    private MonitorEnumProc enumProc;
+    private IDesktopWindowApi windowApi;
+    private readonly List<DesktopRect> monitorRects = new List<DesktopRect>();
     private float checkTimer;
     private float monitorTimer;
     private bool lastAtRightEdge;
@@ -49,8 +34,8 @@ public class SettingsMenuPosition : MonoBehaviour
 
     void Start()
     {
-        unityHWND = Process.GetCurrentProcess().MainWindowHandle;
-        enumProc = EnumProc;
+        windowApi = DesktopWindowApi.Current;
+        windowApi.RefreshOwnWindow();
         RefreshMonitors();
         foreach (var menu in menus)
         {
@@ -63,7 +48,8 @@ public class SettingsMenuPosition : MonoBehaviour
 
     void Update()
     {
-        if (unityHWND == IntPtr.Zero) return;
+        if (windowApi == null) windowApi = DesktopWindowApi.Current;
+        if (!windowApi.IsSupported || !windowApi.RefreshOwnWindow()) return;
 
         monitorTimer += Time.unscaledDeltaTime;
         if (monitorTimer >= Mathf.Max(0.1f, monitorRefreshInterval))
@@ -77,12 +63,11 @@ public class SettingsMenuPosition : MonoBehaviour
         if (checkTimer < step) return;
         checkTimer = 0f;
 
-        RECT winRect;
-        if (!GetWindowRect(unityHWND, out winRect)) return;
+        if (!windowApi.TryGetOwnWindowRect(out DesktopRect winRect)) return;
 
-        RECT screen = monitorRects.Count > 0 ? GetBestMonitor(winRect) : new RECT { left = 0, top = 0, right = Screen.currentResolution.width, bottom = Screen.currentResolution.height };
+        DesktopRect screen = monitorRects.Count > 0 ? GetBestMonitor(winRect) : new DesktopRect(0, 0, Screen.currentResolution.width, Screen.currentResolution.height);
 
-        bool atRightEdge = winRect.right >= (screen.right - edgeMargin);
+        bool atRightEdge = winRect.Right >= (screen.Right - edgeMargin);
         if (!initedEdge) { lastAtRightEdge = atRightEdge; initedEdge = true; }
 
         if (atRightEdge != lastAtRightEdge)
@@ -102,19 +87,15 @@ public class SettingsMenuPosition : MonoBehaviour
         }
     }
 
-    bool EnumProc(IntPtr hMonitor, IntPtr hdc, ref RECT lprc, IntPtr data)
-    {
-        monitorRects.Add(lprc);
-        return true;
-    }
-
     void RefreshMonitors()
     {
         monitorRects.Clear();
-        EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, enumProc, IntPtr.Zero);
+        var monitors = windowApi.GetMonitors();
+        for (int i = 0; i < monitors.Count; i++)
+            monitorRects.Add(monitors[i].Rect);
     }
 
-    RECT GetBestMonitor(RECT win)
+    DesktopRect GetBestMonitor(DesktopRect win)
     {
         int idx = 0, maxArea = 0;
         for (int i = 0; i < monitorRects.Count; i++)
@@ -125,12 +106,12 @@ public class SettingsMenuPosition : MonoBehaviour
         return monitorRects[idx];
     }
 
-    int OverlapArea(RECT a, RECT b)
+    int OverlapArea(DesktopRect a, DesktopRect b)
     {
-        int x1 = Math.Max(a.left, b.left);
-        int x2 = Math.Min(a.right, b.right);
-        int y1 = Math.Max(a.top, b.top);
-        int y2 = Math.Min(a.bottom, b.bottom);
+        int x1 = System.Math.Max(a.Left, b.Left);
+        int x2 = System.Math.Min(a.Right, b.Right);
+        int y1 = System.Math.Max(a.Top, b.Top);
+        int y2 = System.Math.Min(a.Bottom, b.Bottom);
         int w = x2 - x1;
         int h = y2 - y1;
         return (w > 0 && h > 0) ? w * h : 0;

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 [ExecuteAlways]
@@ -27,7 +25,7 @@ public class AvatarTaskbarController : MonoBehaviour
     public Color taskbarGizmoColor = Color.green;
     public Color pinkZoneGizmoColor = Color.magenta;
 
-    private IntPtr unityHWND;
+    private IDesktopWindowApi windowApi;
     private Vector2 unityPos;
     private Rect taskbarRect;
     private Rect pinkZoneDesktopRect;
@@ -48,7 +46,8 @@ public class AvatarTaskbarController : MonoBehaviour
 
     void Start()
     {
-        unityHWND = Process.GetCurrentProcess().MainWindowHandle;
+        windowApi = DesktopWindowApi.Current;
+        windowApi.RefreshOwnWindow();
         animator = avatarAnimator ?? GetComponent<Animator>();
 
         if (attachTarget != null)
@@ -68,7 +67,8 @@ public class AvatarTaskbarController : MonoBehaviour
 
     void Update()
     {
-        if (unityHWND == IntPtr.Zero || animator == null) return;
+        if (windowApi == null) windowApi = DesktopWindowApi.Current;
+        if (!windowApi.IsSupported || !windowApi.RefreshOwnWindow() || animator == null) return;
 
         UpdateUnityWindowPosition();
         UpdateTaskbarRect();
@@ -139,9 +139,9 @@ public class AvatarTaskbarController : MonoBehaviour
 
     void UpdatePinkZone()
     {
-        GetWindowRect(unityHWND, out RECT rect);
-        int unityWidth = rect.Right - rect.Left;
-        int unityHeight = rect.Bottom - rect.Top;
+        if (!windowApi.TryGetOwnWindowRect(out DesktopRect rect)) return;
+        int unityWidth = rect.Width;
+        int unityHeight = rect.Height;
 
         float centerX = unityPos.x + unityWidth / 2f + snapZoneOffset.x;
         float bottomY = unityPos.y + unityHeight + snapZoneOffset.y;
@@ -152,13 +152,14 @@ public class AvatarTaskbarController : MonoBehaviour
 
     void UpdateUnityWindowPosition()
     {
-        GetWindowRect(unityHWND, out RECT rect);
+        if (!windowApi.TryGetOwnWindowRect(out DesktopRect rect)) return;
         unityPos = new Vector2(rect.Left, rect.Top);
     }
 
     void UpdateTaskbarRect()
     {
-        taskbarRect = MonitorHelper.GetTaskbarRectForWindow(unityHWND);
+        DesktopRect rect = windowApi.GetTaskbarRectForOwnWindow();
+        taskbarRect = rect.IsEmpty ? new Rect(0, 0, 0, 0) : rect.ToUnityRect();
     }
 
 
@@ -189,34 +190,4 @@ public class AvatarTaskbarController : MonoBehaviour
 
         Gizmos.DrawWireCube(worldPos, worldSize);
     }
-
-    #region WinAPI
-    private const int ABM_GETTASKBARPOS = 0x00000005;
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct APPBARDATA
-    {
-        public int cbSize;
-        public IntPtr hWnd;
-        public uint uCallbackMessage;
-        public uint uEdge;
-        public RECT rc;
-        public int lParam;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct RECT
-    {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
-    }
-
-    [DllImport("shell32.dll", SetLastError = true)]
-    static extern UInt32 SHAppBarMessage(UInt32 dwMessage, ref APPBARDATA pData);
-
-    [DllImport("user32.dll")]
-    static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-    #endregion
 }
