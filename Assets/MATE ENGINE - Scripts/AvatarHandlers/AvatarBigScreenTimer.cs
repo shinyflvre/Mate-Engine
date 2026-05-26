@@ -1,6 +1,8 @@
 using UnityEngine;
 using System;
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
+#endif
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
@@ -63,14 +65,13 @@ public class AvatarBigScreenTimer : MonoBehaviour
     private LLMUnitySamples.Bubble alarmBubble;
     private Coroutine streamCoroutine;
 
-    [DllImport("user32.dll")]
-    private static extern bool GetCursorPos(out POINT lpPoint);
-
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
     [DllImport("user32.dll")]
     private static extern short GetAsyncKeyState(int vKey);
 
     [StructLayout(LayoutKind.Sequential)]
     public struct POINT { public int X; public int Y; }
+#endif
 
     private readonly Queue<string> pendingEvents = new Queue<string>();
 
@@ -217,6 +218,7 @@ public class AvatarBigScreenTimer : MonoBehaviour
     private bool lastGlobalMouseDown = false;
     private bool IsGlobalUserInput()
     {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         bool mouseDown = (GetAsyncKeyState(0x01) & 0x8000) != 0;
         bool mouseClick = mouseDown && !lastGlobalMouseDown;
         lastGlobalMouseDown = mouseDown;
@@ -231,6 +233,12 @@ public class AvatarBigScreenTimer : MonoBehaviour
             }
         }
         return mouseClick || keyPressed;
+#else
+        bool mouseDown = Input.GetMouseButton(0);
+        bool mouseClick = mouseDown && !lastGlobalMouseDown;
+        lastGlobalMouseDown = mouseDown;
+        return mouseClick || Input.anyKeyDown;
+#endif
     }
 
     public void TriggerAlarmNow()

@@ -12,8 +12,8 @@ using System.IO.Compression;
 public class SteamWorkshopAutoLoader : MonoBehaviour
 {
     private const string WorkshopFolderName = "Steam Workshop";
-    private string workshopFolderPath => Path.Combine(Application.persistentDataPath, WorkshopFolderName);
-    private string modsFolderPath => Path.Combine(Application.persistentDataPath, "Mods");
+    private string workshopFolderPath => MateEnginePaths.WorkshopDir;
+    private string modsFolderPath => MateEnginePaths.ModsDir;
     private readonly List<string> allowedExtensions = new List<string> { ".vrm", ".me", ".unity3d" };
     private AvatarLibraryMenu library;
     private Callback<DownloadItemResult_t> downloadCallback;
@@ -22,7 +22,7 @@ public class SteamWorkshopAutoLoader : MonoBehaviour
     private bool isRefreshing = false;
     private bool pendingRefresh = false;
     public bool hadChangesLastRun { get; private set; }
-    private string modsMapPath => Path.Combine(Application.persistentDataPath, "mods_workshop_map.json");
+    private string modsMapPath => Path.Combine(MateEnginePaths.DataRoot, "mods_workshop_map.json");
 
     private void Awake()
     {
@@ -114,8 +114,8 @@ public class SteamWorkshopAutoLoader : MonoBehaviour
             yield return null;
         }
 
-        string persistentPath = Application.persistentDataPath;
-        string tempCachePath = Application.temporaryCachePath;
+        string persistentPath = MateEnginePaths.DataRoot;
+        string tempCachePath = MateEnginePaths.CacheRoot;
         string workshopDir = workshopFolderPath;
         string modsDir = modsFolderPath;
 
