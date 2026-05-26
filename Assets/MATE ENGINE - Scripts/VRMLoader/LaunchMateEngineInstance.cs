@@ -39,7 +39,7 @@ public class LaunchMateEngineInstances : MonoBehaviour
 
     void Awake()
     {
-        persistentPath = Application.persistentDataPath;
+        persistentPath = MateEnginePaths.DataRoot;
         DetectCurrentInstance();
 
         if (currentInstanceIndex > 0)

@@ -168,9 +168,7 @@ namespace CustomDancePlayer
             if (maxPlayTimeText != null) defaultMaxPlayTimeText = maxPlayTimeText.text;
             BindUI();
 
-            var dir = Path.Combine(Application.persistentDataPath, "Sync");
-            try { Directory.CreateDirectory(dir); } catch { }
-            busPath = Path.Combine(dir, syncFileName);
+            busPath = Path.Combine(MateEnginePaths.SyncDir, syncFileName);
             TryAcquireLeader();
         }
 
@@ -444,8 +442,9 @@ namespace CustomDancePlayer
             string streamDir = Path.Combine(Application.streamingAssetsPath, streamingSubfolder);
             if (Directory.Exists(streamDir)) files.AddRange(Directory.GetFiles(streamDir, "*", SearchOption.AllDirectories));
 
-            string modsDir = Path.Combine(Application.persistentDataPath, modsFolderName);
-            Directory.CreateDirectory(modsDir);
+            string modsDir = string.Equals(modsFolderName, "Mods", StringComparison.OrdinalIgnoreCase)
+                ? MateEnginePaths.ModsDir
+                : MateEnginePaths.SafePersistentSubdirectory(modsFolderName);
             files.AddRange(Directory.GetFiles(modsDir, "*", SearchOption.AllDirectories));
 
             for (int i = 0; i < files.Count; i++)
@@ -491,8 +490,7 @@ namespace CustomDancePlayer
             if (!IsModEnabled(id)) return;
             if (byId.ContainsKey(id)) return;
 
-            string cacheRoot = Path.Combine(Application.temporaryCachePath, "ME_Cache");
-            Directory.CreateDirectory(cacheRoot);
+            string cacheRoot = MateEnginePaths.ModCacheDir;
             string dst = Path.Combine(cacheRoot, id);
 
             bool needExtract = true;

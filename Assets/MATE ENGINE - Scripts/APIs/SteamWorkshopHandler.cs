@@ -37,7 +37,7 @@ public class SteamWorkshopHandler : MonoBehaviour
             progressBar.value = 0f;
         }
 
-        string uploadDir = Path.Combine(Application.temporaryCachePath, "WorkshopUpload");
+        string uploadDir = Path.Combine(MateEnginePaths.CacheRoot, "WorkshopUpload");
         if (Directory.Exists(uploadDir)) Directory.Delete(uploadDir, true);
         Directory.CreateDirectory(uploadDir);
 
@@ -144,7 +144,7 @@ public class SteamWorkshopHandler : MonoBehaviour
             progressBar.value = 0f;
         }
 
-        string uploadDir = Path.Combine(Application.temporaryCachePath, "WorkshopUpload_Mod");
+        string uploadDir = Path.Combine(MateEnginePaths.CacheRoot, "WorkshopUpload_Mod");
         if (Directory.Exists(uploadDir)) Directory.Delete(uploadDir, true);
         Directory.CreateDirectory(uploadDir);
 
@@ -390,7 +390,7 @@ public class SteamWorkshopHandler : MonoBehaviour
 
     void SaveSteamFileIdAvatar(AvatarLibraryMenu.AvatarEntry updatedEntry)
     {
-        string path = Path.Combine(Application.persistentDataPath, "avatars.json");
+        string path = MateEnginePaths.AvatarsJsonPath;
         if (!File.Exists(path)) return;
 
         try
@@ -402,7 +402,7 @@ public class SteamWorkshopHandler : MonoBehaviour
                 {
                     item.steamFileId = updatedEntry.steamFileId;
 
-                    string workshopDir = Path.GetFullPath(Path.Combine(Application.persistentDataPath, "Steam Workshop"));
+                    string workshopDir = Path.GetFullPath(MateEnginePaths.WorkshopDir);
                     string fileFull = string.IsNullOrEmpty(item.filePath) ? "" : Path.GetFullPath(item.filePath);
                     bool isInsideWorkshop = !string.IsNullOrEmpty(fileFull) &&
                                             fileFull.StartsWith(workshopDir, StringComparison.OrdinalIgnoreCase);

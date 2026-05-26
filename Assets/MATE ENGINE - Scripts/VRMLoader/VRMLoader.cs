@@ -72,7 +72,7 @@ public class VRMLoader : MonoBehaviour
 
         try
         {
-            string avatarsPath = System.IO.Path.Combine(Application.persistentDataPath, "avatars.json");
+            string avatarsPath = MateEnginePaths.AvatarsJsonPath;
             if (System.IO.File.Exists(avatarsPath))
             {
                 var entries = JsonConvert.DeserializeObject<System.Collections.Generic.List<AvatarLibraryMenu.AvatarEntry>>(System.IO.File.ReadAllText(avatarsPath));
@@ -326,7 +326,7 @@ public class VRMLoader : MonoBehaviour
 
     public void ResetModel()
     {
-        string vrmFolder = Path.Combine(Application.persistentDataPath, "VRM");
+        string vrmFolder = Path.Combine(MateEnginePaths.DataRoot, "VRM");
         if (Directory.Exists(vrmFolder))
             Directory.Delete(vrmFolder, true);
 

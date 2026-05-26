@@ -238,7 +238,7 @@ namespace CustomDancePlayer
             {
                 var data = new FavData { titles = new List<string>(favorites) };
                 var json = JsonUtility.ToJson(data, true);
-                var path = Path.Combine(Application.persistentDataPath, favoritesFileName);
+                var path = MateEnginePaths.DataFilePath(favoritesFileName);
                 File.WriteAllText(path, json);
             }
             catch { }
@@ -248,7 +248,7 @@ namespace CustomDancePlayer
         {
             try
             {
-                var path = Path.Combine(Application.persistentDataPath, favoritesFileName);
+                var path = MateEnginePaths.DataFilePath(favoritesFileName);
                 if (!File.Exists(path)) return;
                 var json = File.ReadAllText(path);
                 var data = JsonUtility.FromJson<FavData>(json);

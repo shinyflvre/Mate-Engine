@@ -34,8 +34,8 @@ public class AvatarLibraryMenu : MonoBehaviour
     [SerializeField] private float liveUpdateInterval = 3f;
 
 
-    private string avatarsJsonPath => Path.Combine(Application.persistentDataPath, "avatars.json");
-    private string thumbnailsFolder => Path.Combine(Application.persistentDataPath, "Thumbnails");
+    private string avatarsJsonPath => MateEnginePaths.AvatarsJsonPath;
+    private string thumbnailsFolder => MateEnginePaths.ThumbnailsDir;
 
     private List<AvatarEntry> avatarEntries = new List<AvatarEntry>();
 
@@ -134,7 +134,7 @@ public class AvatarLibraryMenu : MonoBehaviour
 
         try
         {
-            string workshopDir = Path.GetFullPath(Path.Combine(Application.persistentDataPath, "Steam Workshop"));
+            string workshopDir = Path.GetFullPath(MateEnginePaths.WorkshopDir);
             bool changed = false;
 
             foreach (var e in avatarEntries)
@@ -370,8 +370,8 @@ public class AvatarLibraryMenu : MonoBehaviour
 
     public static void AddAvatarToLibrary(string displayName, string author, string version, string fileType, string filePath, Texture2D thumbnail, int polygonCount)
     {
-        string avatarsJsonPath = Path.Combine(Application.persistentDataPath, "avatars.json");
-        string thumbnailsFolder = Path.Combine(Application.persistentDataPath, "Thumbnails");
+        string avatarsJsonPath = MateEnginePaths.AvatarsJsonPath;
+        string thumbnailsFolder = MateEnginePaths.ThumbnailsDir;
 
         if (!Directory.Exists(thumbnailsFolder))
             Directory.CreateDirectory(thumbnailsFolder);
@@ -431,7 +431,7 @@ public class AvatarLibraryMenu : MonoBehaviour
 
     private void RemoveAvatar(AvatarEntry entryToRemove)
     {
-        string avatarsJsonPath = Path.Combine(Application.persistentDataPath, "avatars.json");
+        string avatarsJsonPath = MateEnginePaths.AvatarsJsonPath;
 
         if (!File.Exists(avatarsJsonPath))
             return;
@@ -476,7 +476,7 @@ public class AvatarLibraryMenu : MonoBehaviour
     }
     private void SaveAvatars()
     {
-        string avatarsJsonPath = Path.Combine(Application.persistentDataPath, "avatars.json");
+        string avatarsJsonPath = MateEnginePaths.AvatarsJsonPath;
         string newJson = JsonConvert.SerializeObject(avatarEntries, Formatting.Indented);
         File.WriteAllText(avatarsJsonPath, newJson);
     }

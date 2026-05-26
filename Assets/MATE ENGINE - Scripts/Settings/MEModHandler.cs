@@ -22,7 +22,7 @@ public class MEModHandler : MonoBehaviour
 
     void Start()
     {
-        modFolderPath = Path.Combine(Application.persistentDataPath, "Mods");
+        modFolderPath = MateEnginePaths.ModsDir;
         Directory.CreateDirectory(modFolderPath);
         if (loadModButton != null) loadModButton.onClick.AddListener(OpenFileDialogAndLoadMod);
         StartCoroutine(BootLoadMods());
@@ -68,7 +68,7 @@ public class MEModHandler : MonoBehaviour
     void OpenFileDialogAndLoadMod()
     {
         var ext = new[] { new ExtensionFilter("MateEngine Files", "me", "unity3d") };
-        var paths = StandaloneFileBrowser.OpenFilePanel("Select Mod or Dance Asset", ".", ext, false);
+        var paths = StandaloneFileBrowser.OpenFilePanel("Select Mod or Dance Asset", MateEnginePaths.DefaultImportDirectory, ext, false);
         if (paths.Length == 0 || string.IsNullOrEmpty(paths[0])) return;
 
         var src = paths[0];
@@ -110,8 +110,7 @@ public class MEModHandler : MonoBehaviour
     void LoadME(string path)
     {
         string id = Path.GetFileNameWithoutExtension(path);
-        string cacheRoot = Path.Combine(Application.temporaryCachePath, "ME_Cache");
-        Directory.CreateDirectory(cacheRoot);
+        string cacheRoot = MateEnginePaths.ModCacheDir;
         string dst = Path.Combine(cacheRoot, id);
 
         bool needExtract = true;
@@ -632,7 +631,7 @@ public class MEModHandler : MonoBehaviour
 
     string GetThumbPath(string modName)
     {
-        return Path.Combine(Application.persistentDataPath, "Thumbnails", modName + "_thumb.png");
+        return Path.Combine(MateEnginePaths.ThumbnailsDir, modName + "_thumb.png");
     }
 
     void LoadThumbToRawImage(UnityEngine.UI.RawImage img, string modName)

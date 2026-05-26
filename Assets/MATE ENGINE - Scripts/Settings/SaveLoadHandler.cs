@@ -14,11 +14,9 @@ public class SaveLoadHandler : MonoBehaviour
     private static string fileName = "settings.json";
     private static string customDataDir = null;
 
-    private string BaseDir => string.IsNullOrEmpty(customDataDir)
-        ? Application.persistentDataPath
-        : Path.Combine(Application.persistentDataPath, customDataDir);
+    private string BaseDir => MateEnginePaths.SettingsDirectory(customDataDir);
 
-    private string FilePath => Path.Combine(BaseDir, fileName);
+    private string FilePath => MateEnginePaths.SettingsFilePath(customDataDir, fileName);
 
     private void Awake()
     {
