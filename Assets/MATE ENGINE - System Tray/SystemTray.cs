@@ -25,8 +25,10 @@ public class SystemTray : MonoBehaviour
 
     void Awake()
     {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         TrayIcon.OnBuildMenu = BuildMenu;
         TrayIcon.Init("App", iconName, icon, BuildMenu());
+#endif
     }
 
     private List<(string, Action)> BuildMenu()
