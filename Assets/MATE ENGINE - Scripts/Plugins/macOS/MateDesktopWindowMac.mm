@@ -18,6 +18,16 @@ typedef struct MateDWRect
     double bottom;
 } MateDWRect;
 
+typedef struct MateDWRectMotionSample
+{
+    MateDWRect latestRect;
+    CFTimeInterval latestTime;
+    double velocityX;
+    double velocityY;
+    bool canPredict;
+    bool hasLatest;
+} MateDWRectMotionSample;
+
 typedef struct __attribute__((packed)) MateDWWindowInfo
 {
     uint32_t windowId;
@@ -67,6 +77,194 @@ static NSArray *CopyWindowInfoArray(void)
     return CFBridgingRelease(windows);
 }
 
+static NSArray *gWindowSnapshot = nil;
+static CFTimeInterval gWindowSnapshotTime = 0.0;
+static const CFTimeInterval kWindowSnapshotMaxAgeSeconds = 1.0 / 30.0;
+static NSInteger gOwnWindowNumber = 0;
+static bool gOwnTopmostStateKnown = false;
+static bool gOwnTopmostState = false;
+static NSInteger gOwnTopmostWindowNumber = 0;
+static NSMutableDictionary *gRectMotionCache = nil;
+static const CFTimeInterval kRectPredictionMaxLeadSeconds = 1.0 / 30.0;
+static const CFTimeInterval kRectPredictionMaxAgeSeconds = 0.08;
+static const double kRectPredictionResizeTolerance = 2.0;
+static const double kRectPredictionJumpThreshold = 600.0;
+static const double kRectPredictionMaxVelocity = 12000.0;
+static const double kRectPredictionMaxOffset = 96.0;
+static const double kRectPredictionVelocityBlend = 0.45;
+static const double kRectPredictionStopDelta = 1.0;
+static const double kRectPredictionMinVelocity = 30.0;
+
+static NSArray *CopyAndCacheWindowInfoArray(void)
+{
+    NSArray *windows = CopyWindowInfoArray();
+    gWindowSnapshot = windows;
+    gWindowSnapshotTime = windows != nil ? CFAbsoluteTimeGetCurrent() : 0.0;
+    return windows;
+}
+
+static bool IsWindowSnapshotFresh(CFTimeInterval maxAgeSeconds)
+{
+    if (gWindowSnapshot == nil || maxAgeSeconds < 0.0) return false;
+    return CFAbsoluteTimeGetCurrent() - gWindowSnapshotTime <= maxAgeSeconds;
+}
+
+static NSArray *CachedWindowInfoArray(bool allowRefresh, CFTimeInterval maxAgeSeconds)
+{
+    if (gWindowSnapshot != nil && IsWindowSnapshotFresh(maxAgeSeconds)) return gWindowSnapshot;
+    if (!allowRefresh) return gWindowSnapshot;
+    return CopyAndCacheWindowInfoArray();
+}
+
+static NSMutableDictionary *RectMotionCache(void)
+{
+    if (gRectMotionCache == nil) gRectMotionCache = [[NSMutableDictionary alloc] init];
+    return gRectMotionCache;
+}
+
+static double RectWidth(MateDWRect rect)
+{
+    return rect.right - rect.left;
+}
+
+static double RectHeight(MateDWRect rect)
+{
+    return rect.bottom - rect.top;
+}
+
+static double MaxRectEdgeDelta(MateDWRect a, MateDWRect b)
+{
+    double maxDelta = fabs(a.left - b.left);
+    maxDelta = fmax(maxDelta, fabs(a.top - b.top));
+    maxDelta = fmax(maxDelta, fabs(a.right - b.right));
+    maxDelta = fmax(maxDelta, fabs(a.bottom - b.bottom));
+    return maxDelta;
+}
+
+static bool IsUsablePredictionSample(MateDWRect previous, MateDWRect latest, CFTimeInterval dt)
+{
+    if (dt <= 0.001 || dt > 0.25) return false;
+    if (fabs(RectWidth(latest) - RectWidth(previous)) > kRectPredictionResizeTolerance) return false;
+    if (fabs(RectHeight(latest) - RectHeight(previous)) > kRectPredictionResizeTolerance) return false;
+    if (MaxRectEdgeDelta(previous, latest) > kRectPredictionJumpThreshold) return false;
+
+    double vx = (latest.left - previous.left) / dt;
+    double vy = (latest.top - previous.top) / dt;
+    return hypot(vx, vy) <= kRectPredictionMaxVelocity;
+}
+
+static void ResetWindowRectMotion(MateDWRectMotionSample *sample, MateDWRect rect, CFTimeInterval time)
+{
+    sample->latestRect = rect;
+    sample->latestTime = time;
+    sample->velocityX = 0.0;
+    sample->velocityY = 0.0;
+    sample->canPredict = false;
+    sample->hasLatest = true;
+}
+
+static void CacheWindowRectSample(uint32_t windowId, MateDWRect rect, CFTimeInterval time)
+{
+    if (windowId == 0 || RectWidth(rect) <= 1.0 || RectHeight(rect) <= 1.0) return;
+    if (time <= 0.0) time = CFAbsoluteTimeGetCurrent();
+
+    MateDWRectMotionSample sample;
+    memset(&sample, 0, sizeof(sample));
+
+    NSValue *value = [gRectMotionCache objectForKey:@(windowId)];
+    if (value != nil) [value getValue:&sample];
+
+    if (!sample.hasLatest)
+    {
+        ResetWindowRectMotion(&sample, rect, time);
+        [RectMotionCache() setObject:[NSValue valueWithBytes:&sample objCType:@encode(MateDWRectMotionSample)] forKey:@(windowId)];
+        return;
+    }
+
+    if (time <= sample.latestTime + 0.0001 &&
+        MaxRectEdgeDelta(sample.latestRect, rect) < 0.5)
+    {
+        return;
+    }
+
+    CFTimeInterval dt = time - sample.latestTime;
+    if (!IsUsablePredictionSample(sample.latestRect, rect, dt))
+    {
+        ResetWindowRectMotion(&sample, rect, time);
+        [RectMotionCache() setObject:[NSValue valueWithBytes:&sample objCType:@encode(MateDWRectMotionSample)] forKey:@(windowId)];
+        return;
+    }
+
+    double dx = rect.left - sample.latestRect.left;
+    double dy = rect.top - sample.latestRect.top;
+    double movement = hypot(dx, dy);
+    if (movement <= kRectPredictionStopDelta)
+    {
+        sample.velocityX *= 0.2;
+        sample.velocityY *= 0.2;
+        if (hypot(sample.velocityX, sample.velocityY) < kRectPredictionMinVelocity)
+        {
+            sample.velocityX = 0.0;
+            sample.velocityY = 0.0;
+            sample.canPredict = false;
+        }
+    }
+    else
+    {
+        double measuredVelocityX = dx / dt;
+        double measuredVelocityY = dy / dt;
+        sample.velocityX = sample.velocityX * (1.0 - kRectPredictionVelocityBlend) + measuredVelocityX * kRectPredictionVelocityBlend;
+        sample.velocityY = sample.velocityY * (1.0 - kRectPredictionVelocityBlend) + measuredVelocityY * kRectPredictionVelocityBlend;
+
+        double velocity = hypot(sample.velocityX, sample.velocityY);
+        if (velocity > kRectPredictionMaxVelocity)
+        {
+            double scale = kRectPredictionMaxVelocity / velocity;
+            sample.velocityX *= scale;
+            sample.velocityY *= scale;
+        }
+        sample.canPredict = hypot(sample.velocityX, sample.velocityY) >= kRectPredictionMinVelocity;
+    }
+
+    sample.latestRect = rect;
+    sample.latestTime = time;
+    sample.hasLatest = true;
+    [RectMotionCache() setObject:[NSValue valueWithBytes:&sample objCType:@encode(MateDWRectMotionSample)] forKey:@(windowId)];
+}
+
+static bool PredictedWindowRect(uint32_t windowId, MateDWRect fallback, MateDWRect *rect)
+{
+    if (rect == NULL) return false;
+    *rect = fallback;
+    if (windowId == 0 || gRectMotionCache == nil) return true;
+
+    NSValue *value = [gRectMotionCache objectForKey:@(windowId)];
+    if (value == nil) return true;
+
+    MateDWRectMotionSample sample;
+    [value getValue:&sample];
+    if (!sample.hasLatest) return true;
+
+    *rect = sample.latestRect;
+    if (!sample.canPredict) return true;
+
+    CFTimeInterval lead = CFAbsoluteTimeGetCurrent() - sample.latestTime;
+    if (lead <= 0.0 || lead > kRectPredictionMaxAgeSeconds) return true;
+    lead = fmin(lead, kRectPredictionMaxLeadSeconds);
+
+    double leadScale = 1.0 - 0.35 * (lead / kRectPredictionMaxLeadSeconds);
+    double dx = sample.velocityX * lead * leadScale;
+    double dy = sample.velocityY * lead * leadScale;
+    dx = fmax(-kRectPredictionMaxOffset, fmin(kRectPredictionMaxOffset, dx));
+    dy = fmax(-kRectPredictionMaxOffset, fmin(kRectPredictionMaxOffset, dy));
+
+    rect->left = sample.latestRect.left + dx;
+    rect->right = sample.latestRect.right + dx;
+    rect->top = sample.latestRect.top + dy;
+    rect->bottom = sample.latestRect.bottom + dy;
+    return true;
+}
+
 static CGRect CGBoundsForScreen(NSScreen *screen)
 {
     if (screen == nil) return CGRectZero;
@@ -94,6 +292,121 @@ static NSScreen *ScreenForCGPoint(double x, double y, CGRect *cgBounds)
     return fallback;
 }
 
+static bool IsUsableOwnWindow(NSWindow *window)
+{
+    if (window == nil || ![window isVisible] || [window isMiniaturized]) return false;
+    NSRect frame = [window frame];
+    return NSWidth(frame) > 1.0 && NSHeight(frame) > 1.0;
+}
+
+static void CacheOwnWindow(NSWindow *window)
+{
+    if (window == nil) return;
+    NSInteger windowNumber = [window windowNumber];
+    if (windowNumber > 0) gOwnWindowNumber = windowNumber;
+}
+
+static NSWindow *FindOwnWindowByNumber(NSInteger windowNumber)
+{
+    if (windowNumber <= 0) return nil;
+    for (NSWindow *window in [NSApp windows])
+    {
+        if ([window windowNumber] == windowNumber && IsUsableOwnWindow(window)) return window;
+    }
+    return nil;
+}
+
+static NSWindow *LargestVisibleOwnWindow(void)
+{
+    NSWindow *bestWindow = nil;
+    double bestArea = -1.0;
+    for (NSWindow *window in [NSApp windows])
+    {
+        if (!IsUsableOwnWindow(window)) continue;
+        NSRect frame = [window frame];
+        double area = NSWidth(frame) * NSHeight(frame);
+        if (area > bestArea)
+        {
+            bestArea = area;
+            bestWindow = window;
+        }
+    }
+    return bestWindow;
+}
+
+static NSWindow *CurrentOwnWindow(void)
+{
+    NSWindow *window = [NSApp mainWindow] ?: [NSApp keyWindow];
+    if (IsUsableOwnWindow(window))
+    {
+        CacheOwnWindow(window);
+        return window;
+    }
+
+    window = FindOwnWindowByNumber(gOwnWindowNumber);
+    if (window != nil) return window;
+
+    window = LargestVisibleOwnWindow();
+    if (window != nil) CacheOwnWindow(window);
+    return window;
+}
+
+static bool RectFromCocoaScreenRect(NSRect screenRect, NSScreen *screen, MateDWRect *rect)
+{
+    if (rect == NULL || screen == nil) return false;
+
+    NSRect screenFrame = [screen frame];
+    CGRect cgBounds = CGBoundsForScreen(screen);
+    if (CGRectIsEmpty(cgBounds)) return false;
+
+    double localLeft = NSMinX(screenRect) - NSMinX(screenFrame);
+    double localBottom = NSMinY(screenRect) - NSMinY(screenFrame);
+    double localTop = localBottom + NSHeight(screenRect);
+    rect->left = CGRectGetMinX(cgBounds) + localLeft;
+    rect->top = CGRectGetMinY(cgBounds) + CGRectGetHeight(cgBounds) - localTop;
+    rect->right = rect->left + NSWidth(screenRect);
+    rect->bottom = rect->top + NSHeight(screenRect);
+    return true;
+}
+
+static bool RectFromAppKitWindow(NSWindow *window, bool contentOnly, MateDWRect *rect)
+{
+    if (window == nil) return false;
+    NSScreen *screen = [window screen] ?: [NSScreen mainScreen];
+    if (screen == nil) return false;
+
+    NSRect frame = [window frame];
+    NSRect screenRect = contentOnly ? [window contentRectForFrameRect:frame] : frame;
+    return RectFromCocoaScreenRect(screenRect, screen, rect);
+}
+
+static NSDictionary *FindWindowInArray(NSArray *windows, uint32_t windowId, int *index)
+{
+    if (windowId == 0 || windows == nil) return nil;
+    int i = 0;
+    for (NSDictionary *window in windows)
+    {
+        NSNumber *number = window[(id)kCGWindowNumber];
+        if (number != nil && [number unsignedIntValue] == windowId)
+        {
+            if (index != NULL) *index = i;
+            return window;
+        }
+        i++;
+    }
+    return nil;
+}
+
+static NSDictionary *FindWindowInSnapshot(uint32_t windowId, bool refreshOnMiss, int *index)
+{
+    bool hadFreshSnapshot = IsWindowSnapshotFresh(kWindowSnapshotMaxAgeSeconds);
+    NSArray *windows = CachedWindowInfoArray(refreshOnMiss, kWindowSnapshotMaxAgeSeconds);
+    NSDictionary *window = FindWindowInArray(windows, windowId, index);
+    if (window != nil || !refreshOnMiss || !hadFreshSnapshot) return window;
+    windows = CopyAndCacheWindowInfoArray();
+    return FindWindowInArray(windows, windowId, index);
+}
+
 static bool FillInfo(NSDictionary *window, MateDWWindowInfo *outInfo, int z)
 {
     if (window == nil || outInfo == NULL) return false;
@@ -119,6 +432,7 @@ static bool FillInfo(NSDictionary *window, MateDWWindowInfo *outInfo, int z)
     outInfo->onScreen = onScreen == nil ? true : [onScreen boolValue];
     CopyUTF8(window[(id)kCGWindowOwnerName], outInfo->ownerName, sizeof(outInfo->ownerName));
     CopyUTF8(window[(id)kCGWindowName], outInfo->title, sizeof(outInfo->title));
+    CacheWindowRectSample(outInfo->windowId, rect, gWindowSnapshotTime);
     (void)z;
     return outInfo->windowId != 0;
 }
@@ -128,7 +442,7 @@ extern "C" int MateDWCopyWindowInfos(MateDWWindowInfo *buffer, int capacity)
     if (buffer == NULL || capacity <= 0) return 0;
     @autoreleasepool
     {
-        NSArray *windows = CopyWindowInfoArray();
+        NSArray *windows = CopyAndCacheWindowInfoArray();
         if (windows == nil) return 0;
 
         int copied = 0;
@@ -146,16 +460,41 @@ extern "C" bool MateDWGetWindowRect(uint32_t windowId, MateDWRect *rect)
     if (windowId == 0 || rect == NULL) return false;
     @autoreleasepool
     {
-        NSArray *windows = CopyWindowInfoArray();
-        for (NSDictionary *window in windows)
-        {
-            NSNumber *number = window[(id)kCGWindowNumber];
-            if (number != nil && [number unsignedIntValue] == windowId)
-            {
-                return RectFromWindowDictionary(window, rect);
-            }
-        }
-        return false;
+        MateDWRect rawRect;
+        NSDictionary *window = FindWindowInSnapshot(windowId, true, NULL);
+        if (!RectFromWindowDictionary(window, &rawRect)) return false;
+        CacheWindowRectSample(windowId, rawRect, gWindowSnapshotTime);
+        return PredictedWindowRect(windowId, rawRect, rect);
+    }
+}
+
+extern "C" bool MateDWIsWindowAlive(uint32_t windowId)
+{
+    if (windowId == 0) return false;
+    @autoreleasepool
+    {
+        return FindWindowInSnapshot(windowId, true, NULL) != nil;
+    }
+}
+
+extern "C" bool MateDWIsWindowAbove(uint32_t aWindowId, uint32_t bWindowId)
+{
+    if (aWindowId == 0 || bWindowId == 0 || aWindowId == bWindowId) return false;
+    @autoreleasepool
+    {
+        int ai = -1;
+        int bi = -1;
+        NSArray *windows = CachedWindowInfoArray(true, kWindowSnapshotMaxAgeSeconds);
+        FindWindowInArray(windows, aWindowId, &ai);
+        FindWindowInArray(windows, bWindowId, &bi);
+        if (ai >= 0 && bi >= 0) return ai < bi;
+
+        windows = CopyAndCacheWindowInfoArray();
+        ai = -1;
+        bi = -1;
+        FindWindowInArray(windows, aWindowId, &ai);
+        FindWindowInArray(windows, bWindowId, &bi);
+        return ai >= 0 && bi >= 0 && ai < bi;
     }
 }
 
@@ -191,6 +530,7 @@ extern "C" bool MateDWGetOwnWindowRect(MateDWRect *rect)
     if (rect == NULL) return false;
     @autoreleasepool
     {
+        if (RectFromAppKitWindow(CurrentOwnWindow(), false, rect)) return true;
         return FindOwnWindowRect(rect);
     }
 }
@@ -200,25 +540,10 @@ extern "C" bool MateDWGetOwnClientRect(MateDWRect *rect)
     if (rect == NULL) return false;
     @autoreleasepool
     {
-        NSWindow *window = [NSApp mainWindow] ?: [NSApp keyWindow];
+        NSWindow *window = CurrentOwnWindow();
         if (window == nil) return FindOwnWindowRect(rect);
-
-        NSRect screenRect = [window contentRectForFrameRect:[window frame]];
-        NSScreen *screen = [window screen] ?: [NSScreen mainScreen];
-        if (screen == nil) return FindOwnWindowRect(rect);
-
-        NSRect screenFrame = [screen frame];
-        CGRect cgBounds = CGBoundsForScreen(screen);
-        if (CGRectIsEmpty(cgBounds)) return FindOwnWindowRect(rect);
-
-        double localLeft = NSMinX(screenRect) - NSMinX(screenFrame);
-        double localBottom = NSMinY(screenRect) - NSMinY(screenFrame);
-        double localTop = localBottom + NSHeight(screenRect);
-        rect->left = CGRectGetMinX(cgBounds) + localLeft;
-        rect->top = CGRectGetMinY(cgBounds) + CGRectGetHeight(cgBounds) - localTop;
-        rect->right = rect->left + NSWidth(screenRect);
-        rect->bottom = rect->top + NSHeight(screenRect);
-        return true;
+        if (RectFromAppKitWindow(window, true, rect)) return true;
+        return FindOwnWindowRect(rect);
     }
 }
 
@@ -227,7 +552,7 @@ extern "C" bool MateDWMoveOwnWindow(int x, int y, int width, int height)
     if (width <= 0 || height <= 0) return false;
     @autoreleasepool
     {
-        NSWindow *window = [NSApp mainWindow] ?: [NSApp keyWindow];
+        NSWindow *window = CurrentOwnWindow();
         if (window == nil) return false;
 
         CGRect cgBounds;
@@ -250,9 +575,19 @@ extern "C" void MateDWSetOwnTopmost(bool enabled)
 {
     @autoreleasepool
     {
-        NSWindow *window = [NSApp mainWindow] ?: [NSApp keyWindow];
+        NSWindow *window = CurrentOwnWindow();
         if (window == nil) return;
+        NSInteger windowNumber = [window windowNumber];
+        if (gOwnTopmostStateKnown &&
+            gOwnTopmostWindowNumber == windowNumber &&
+            gOwnTopmostState == enabled)
+        {
+            return;
+        }
         [window setLevel:(enabled ? NSPopUpMenuWindowLevel : NSNormalWindowLevel)];
+        gOwnTopmostStateKnown = true;
+        gOwnTopmostState = enabled;
+        gOwnTopmostWindowNumber = windowNumber;
     }
 }
 

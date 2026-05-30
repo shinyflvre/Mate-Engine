@@ -645,12 +645,12 @@ class MacDesktopWindowApi : DesktopWindowApiBase
 
     public override bool TryGetOwnWindowRect(out DesktopRect rect)
     {
-        if (TryGetUniWindowRect(out rect)) return true;
         if (MacNative.GetOwnWindowRect(out NativeRect nativeRect))
         {
             rect = nativeRect.ToDesktopRect();
             return !rect.IsEmpty;
         }
+        rect = new DesktopRect();
         return false;
     }
 
@@ -661,7 +661,6 @@ class MacDesktopWindowApi : DesktopWindowApiBase
             rect = nativeRect.ToDesktopRect();
             return !rect.IsEmpty;
         }
-        if (TryGetUniWindowClientRect(out rect)) return true;
         if (TryGetOwnWindowRect(out rect)) return true;
         return false;
     }
@@ -669,17 +668,7 @@ class MacDesktopWindowApi : DesktopWindowApiBase
     public override bool TryMoveOwnWindow(int x, int y, int width, int height, bool repaint)
     {
         if (width <= 0 || height <= 0) return false;
-        try
-        {
-            var controller = UniWindowController.current;
-            controller.windowSize = new Vector2(width, height);
-            controller.windowPosition = new Vector2(x, y);
-            return true;
-        }
-        catch
-        {
-            return MacNative.MoveOwnWindow(x, y, width, height);
-        }
+        return MacNative.MoveOwnWindow(x, y, width, height);
     }
 
     public override bool TryMoveOwnWindowPosition(int x, int y)
@@ -691,43 +680,8 @@ class MacDesktopWindowApi : DesktopWindowApiBase
 
     public override void SetOwnTopmost(bool enabled)
     {
-        try { UniWindowController.current.isTopmost = enabled; }
-        catch { MacNative.SetOwnTopmost(enabled); }
-    }
-
-    bool TryGetUniWindowRect(out DesktopRect rect)
-    {
-        try
-        {
-            var controller = UniWindowController.current;
-            Vector2 pos = controller.windowPosition;
-            Vector2 size = controller.windowSize;
-            rect = DesktopRect.FromPositionSize(pos.x, pos.y, size.x, size.y);
-            return !rect.IsEmpty;
-        }
-        catch
-        {
-            rect = new DesktopRect();
-            return false;
-        }
-    }
-
-    bool TryGetUniWindowClientRect(out DesktopRect rect)
-    {
-        try
-        {
-            var controller = UniWindowController.current;
-            Vector2 pos = controller.windowPosition;
-            Vector2 size = controller.clientSize;
-            if (size.x <= 0f || size.y <= 0f) size = controller.windowSize;
-            rect = DesktopRect.FromPositionSize(pos.x, pos.y, size.x, size.y);
-            return !rect.IsEmpty;
-        }
-        catch
-        {
-            rect = new DesktopRect();
-            return false;
-        }
+        try { MacNative.SetOwnTopmost(enabled); }
+        catch { try { UniWindowController.current.isTopmost = enabled; } catch { } }
     }
 
     public override IReadOnlyList<DesktopWindowInfo> EnumerateWindows()
@@ -784,20 +738,19 @@ class MacDesktopWindowApi : DesktopWindowApiBase
         return false;
     }
 
-    public override bool IsWindowAlive(IntPtr windowId) => TryGetWindowRect(windowId, out DesktopRect r) && !r.IsEmpty;
+    public override bool IsWindowAlive(IntPtr windowId)
+    {
+        uint id = unchecked((uint)windowId.ToInt64());
+        return id != 0 && MacNative.IsWindowAlive(id);
+    }
     public override bool IsWindowMinimized(IntPtr windowId) => !IsWindowAlive(windowId);
     public override bool IsWindowMaximized(IntPtr windowId) => false;
 
     public override bool IsAbove(IntPtr a, IntPtr b)
     {
-        var windows = EnumerateWindows();
-        int ai = -1, bi = -1;
-        for (int i = 0; i < windows.Count; i++)
-        {
-            if (windows[i].Id == a) ai = i;
-            if (windows[i].Id == b) bi = i;
-        }
-        return ai >= 0 && bi >= 0 && ai < bi;
+        uint aId = unchecked((uint)a.ToInt64());
+        uint bId = unchecked((uint)b.ToInt64());
+        return aId != 0 && bId != 0 && MacNative.IsWindowAbove(aId, bId);
     }
 
     public override IReadOnlyList<DesktopMonitorInfo> GetMonitors()
@@ -883,6 +836,14 @@ class MacDesktopWindowApi : DesktopWindowApiBase
         [DllImport(Lib, EntryPoint = "MateDWGetWindowRect")]
         [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool GetWindowRect(uint windowId, out NativeRect rect);
+
+        [DllImport(Lib, EntryPoint = "MateDWIsWindowAlive")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool IsWindowAlive(uint windowId);
+
+        [DllImport(Lib, EntryPoint = "MateDWIsWindowAbove")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool IsWindowAbove(uint aWindowId, uint bWindowId);
 
         [DllImport(Lib, EntryPoint = "MateDWGetOwnWindowRect")]
         [return: MarshalAs(UnmanagedType.I1)]
