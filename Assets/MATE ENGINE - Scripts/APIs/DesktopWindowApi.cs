@@ -113,6 +113,15 @@ public static class DesktopWindowApi
 
     public static void Reset() => _current = null;
 
+    internal static bool TryCoverOwnMonitorForBigScreen()
+    {
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+        return MacDesktopWindowApi.TryCoverOwnMonitorForBigScreen();
+#else
+        return false;
+#endif
+    }
+
     static IDesktopWindowApi Create()
     {
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
@@ -671,6 +680,12 @@ class MacDesktopWindowApi : DesktopWindowApiBase
         return MacNative.MoveOwnWindow(x, y, width, height);
     }
 
+    public static bool TryCoverOwnMonitorForBigScreen()
+    {
+        try { return MacNative.CoverOwnMonitor(); }
+        catch { return false; }
+    }
+
     public override bool TryMoveOwnWindowPosition(int x, int y)
     {
         if (TryGetOwnWindowRect(out DesktopRect r))
@@ -856,6 +871,10 @@ class MacDesktopWindowApi : DesktopWindowApiBase
         [DllImport(Lib, EntryPoint = "MateDWMoveOwnWindow")]
         [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool MoveOwnWindow(int x, int y, int width, int height);
+
+        [DllImport(Lib, EntryPoint = "MateDWCoverOwnMonitor")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool CoverOwnMonitor();
 
         [DllImport(Lib, EntryPoint = "MateDWSetOwnTopmost")]
         public static extern void SetOwnTopmost([MarshalAs(UnmanagedType.I1)] bool enabled);

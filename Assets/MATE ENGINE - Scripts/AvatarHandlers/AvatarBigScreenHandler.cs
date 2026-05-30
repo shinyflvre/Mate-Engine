@@ -308,10 +308,19 @@ public class AvatarBigScreenHandler : MonoBehaviour
         {
             if (windowApi.TryGetOwnWindowRect(out DesktopRect windowRect))
             {
+                originalWindowRect = windowRect; originalRectSet = true;
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+                if (!DesktopWindowApi.TryCoverOwnMonitorForBigScreen())
+                {
+                    DesktopRect targetScreen = FindBestMonitorRect(windowRect);
+                    int sw = targetScreen.Width, sh = targetScreen.Height;
+                    windowApi.TryMoveOwnWindow(targetScreen.Left, targetScreen.Top, sw, sh, true);
+                }
+#else
                 DesktopRect targetScreen = FindBestMonitorRect(windowRect);
                 int sw = targetScreen.Width, sh = targetScreen.Height;
                 windowApi.TryMoveOwnWindow(targetScreen.Left, targetScreen.Top, sw, sh, true);
-                originalWindowRect = windowRect; originalRectSet = true;
+#endif
             }
         }
         if (!toFadeY && MainCamera != null)
