@@ -43,6 +43,41 @@ typedef struct __attribute__((packed)) MateDWWindowInfo
     char title[256];
 } MateDWWindowInfo;
 
+static NSStatusItem *gStatusMenuItem = nil;
+static NSMenu *gStatusMenu = nil;
+static NSInteger gStatusMenuSelectedIndex = -1;
+static bool gStatusMenuOpen = false;
+
+@interface MateDWStatusMenuTarget : NSObject
+- (void)itemSelected:(id)sender;
+@end
+
+@implementation MateDWStatusMenuTarget
+- (void)itemSelected:(id)sender
+{
+    if ([sender respondsToSelector:@selector(tag)])
+        gStatusMenuSelectedIndex = [sender tag];
+}
+@end
+
+@interface MateDWStatusMenuDelegate : NSObject <NSMenuDelegate>
+@end
+
+@implementation MateDWStatusMenuDelegate
+- (void)menuWillOpen:(NSMenu *)menu
+{
+    gStatusMenuOpen = true;
+}
+
+- (void)menuDidClose:(NSMenu *)menu
+{
+    gStatusMenuOpen = false;
+}
+@end
+
+static MateDWStatusMenuTarget *gStatusMenuTarget = nil;
+static MateDWStatusMenuDelegate *gStatusMenuDelegate = nil;
+
 static void CopyUTF8(NSString *source, char *destination, size_t capacity)
 {
     if (capacity == 0) return;
@@ -265,30 +300,57 @@ static bool PredictedWindowRect(uint32_t windowId, MateDWRect fallback, MateDWRe
     return true;
 }
 
-static CGRect CGBoundsForScreen(NSScreen *screen)
+static CGDirectDisplayID DisplayIDForScreen(NSScreen *screen)
 {
-    if (screen == nil) return CGRectZero;
+    if (screen == nil) return 0;
     NSNumber *screenNumber = screen.deviceDescription[@"NSScreenNumber"];
-    if (screenNumber == nil) return CGRectZero;
-    return CGDisplayBounds((CGDirectDisplayID)[screenNumber unsignedIntValue]);
+    return screenNumber != nil ? (CGDirectDisplayID)[screenNumber unsignedIntValue] : 0;
 }
 
-static NSScreen *ScreenForCGPoint(double x, double y, CGRect *cgBounds)
+static CGRect CGBoundsForScreen(NSScreen *screen)
+{
+    CGDirectDisplayID displayId = DisplayIDForScreen(screen);
+    return displayId != 0 ? CGDisplayBounds(displayId) : CGRectZero;
+}
+
+static NSScreen *ScreenForDisplayID(CGDirectDisplayID displayId)
 {
     for (NSScreen *screen in [NSScreen screens])
     {
-        CGRect bounds = CGBoundsForScreen(screen);
-        if (CGRectIsEmpty(bounds)) continue;
-        if (x >= CGRectGetMinX(bounds) && x < CGRectGetMaxX(bounds) &&
-            y >= CGRectGetMinY(bounds) && y < CGRectGetMaxY(bounds))
+        if (DisplayIDForScreen(screen) == displayId) return screen;
+    }
+    return nil;
+}
+
+static bool DesktopRectForScreen(NSScreen *screen, MateDWRect *rect)
+{
+    if (screen == nil || rect == NULL) return false;
+    NSRect screenFrame = [screen frame];
+    CGRect cgBounds = CGBoundsForScreen(screen);
+    if (CGRectIsEmpty(cgBounds) || NSWidth(screenFrame) <= 0.0 || NSHeight(screenFrame) <= 0.0) return false;
+
+    rect->left = CGRectGetMinX(cgBounds);
+    rect->top = CGRectGetMinY(cgBounds);
+    rect->right = rect->left + NSWidth(screenFrame);
+    rect->bottom = rect->top + NSHeight(screenFrame);
+    return true;
+}
+
+static NSScreen *ScreenForDesktopPoint(double x, double y, MateDWRect *screenRect)
+{
+    for (NSScreen *screen in [NSScreen screens])
+    {
+        MateDWRect rect;
+        if (!DesktopRectForScreen(screen, &rect)) continue;
+        if (x >= rect.left && x < rect.right && y >= rect.top && y < rect.bottom)
         {
-            if (cgBounds != NULL) *cgBounds = bounds;
+            if (screenRect != NULL) *screenRect = rect;
             return screen;
         }
     }
 
     NSScreen *fallback = [NSScreen mainScreen];
-    if (cgBounds != NULL) *cgBounds = CGBoundsForScreen(fallback);
+    if (screenRect != NULL && fallback != nil) DesktopRectForScreen(fallback, screenRect);
     return fallback;
 }
 
@@ -356,14 +418,14 @@ static bool RectFromCocoaScreenRect(NSRect screenRect, NSScreen *screen, MateDWR
     if (rect == NULL || screen == nil) return false;
 
     NSRect screenFrame = [screen frame];
-    CGRect cgBounds = CGBoundsForScreen(screen);
-    if (CGRectIsEmpty(cgBounds)) return false;
+    MateDWRect desktopScreen;
+    if (!DesktopRectForScreen(screen, &desktopScreen)) return false;
 
     double localLeft = NSMinX(screenRect) - NSMinX(screenFrame);
     double localBottom = NSMinY(screenRect) - NSMinY(screenFrame);
     double localTop = localBottom + NSHeight(screenRect);
-    rect->left = CGRectGetMinX(cgBounds) + localLeft;
-    rect->top = CGRectGetMinY(cgBounds) + CGRectGetHeight(cgBounds) - localTop;
+    rect->left = desktopScreen.left + localLeft;
+    rect->top = desktopScreen.bottom - localTop;
     rect->right = rect->left + NSWidth(screenRect);
     rect->bottom = rect->top + NSHeight(screenRect);
     return true;
@@ -555,18 +617,34 @@ extern "C" bool MateDWMoveOwnWindow(int x, int y, int width, int height)
         NSWindow *window = CurrentOwnWindow();
         if (window == nil) return false;
 
-        CGRect cgBounds;
-        NSScreen *screen = ScreenForCGPoint(x, y, &cgBounds);
-        if (screen == nil || CGRectIsEmpty(cgBounds)) screen = [window screen] ?: [NSScreen mainScreen];
+        MateDWRect desktopScreen = {0.0, 0.0, 0.0, 0.0};
+        NSScreen *screen = ScreenForDesktopPoint(x, y, &desktopScreen);
+        if (screen == nil || RectWidth(desktopScreen) <= 0.0 || RectHeight(desktopScreen) <= 0.0) screen = [window screen] ?: [NSScreen mainScreen];
         if (screen == nil) return false;
+        if (RectWidth(desktopScreen) <= 0.0 || RectHeight(desktopScreen) <= 0.0)
+        {
+            if (!DesktopRectForScreen(screen, &desktopScreen)) return false;
+        }
 
         NSRect screenFrame = [screen frame];
-        if (CGRectIsEmpty(cgBounds)) cgBounds = CGBoundsForScreen(screen);
-        if (CGRectIsEmpty(cgBounds)) return false;
-
-        CGFloat cocoaX = NSMinX(screenFrame) + (x - CGRectGetMinX(cgBounds));
-        CGFloat cocoaY = NSMinY(screenFrame) + CGRectGetHeight(cgBounds) - (y - CGRectGetMinY(cgBounds)) - height;
+        CGFloat cocoaX = NSMinX(screenFrame) + (x - desktopScreen.left);
+        CGFloat cocoaY = NSMaxY(screenFrame) - (y - desktopScreen.top) - height;
         [window setFrame:NSMakeRect(cocoaX, cocoaY, width, height) display:YES animate:NO];
+        return true;
+    }
+}
+
+extern "C" bool MateDWCoverOwnMonitor(void)
+{
+    @autoreleasepool
+    {
+        NSWindow *window = CurrentOwnWindow();
+        if (window == nil) return false;
+
+        NSScreen *screen = [window screen] ?: [NSScreen mainScreen];
+        if (screen == nil) return false;
+
+        [window setFrame:[screen frame] display:YES animate:NO];
         return true;
     }
 }
@@ -591,6 +669,133 @@ extern "C" void MateDWSetOwnTopmost(bool enabled)
     }
 }
 
+static NSImage *LoadStatusMenuTemplateIcon(void)
+{
+    NSBundle *bundle = [NSBundle bundleForClass:[MateDWStatusMenuTarget class]];
+    NSString *path = [bundle pathForResource:@"macOS_menu_bar_item_icon" ofType:@"svg"];
+    if (path == nil) return nil;
+
+    NSImage *image = [[NSImage alloc] initWithContentsOfFile:path];
+    if (image == nil) return nil;
+
+    [image setTemplate:YES];
+    [image setSize:NSMakeSize(18.0, 18.0)];
+    return image;
+}
+
+static void ConfigureStatusMenuIcon(void)
+{
+    if (gStatusMenuItem == nil) return;
+    NSStatusBarButton *button = [gStatusMenuItem button];
+    if (button == nil) return;
+
+    NSImage *image = LoadStatusMenuTemplateIcon();
+    if (image != nil)
+    {
+        [button setImage:image];
+        [button setTitle:@""];
+    }
+    else
+    {
+        [button setImage:nil];
+        [button setTitle:@"ME"];
+    }
+    [button setToolTip:@"MateEngine"];
+}
+
+static bool EnsureStatusMenu(void)
+{
+    if (gStatusMenuItem == nil)
+    {
+        gStatusMenuItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
+        if (gStatusMenuItem == nil) return false;
+    }
+
+    if (gStatusMenuTarget == nil) gStatusMenuTarget = [[MateDWStatusMenuTarget alloc] init];
+    if (gStatusMenuDelegate == nil) gStatusMenuDelegate = [[MateDWStatusMenuDelegate alloc] init];
+
+    if (gStatusMenu == nil)
+    {
+        gStatusMenu = [[NSMenu alloc] initWithTitle:@"MateEngine"];
+        [gStatusMenu setDelegate:gStatusMenuDelegate];
+        [gStatusMenuItem setMenu:gStatusMenu];
+    }
+
+    NSStatusBarButton *button = [gStatusMenuItem button];
+    bool needsIcon = button != nil && [button image] == nil && [[button title] length] == 0;
+    if (needsIcon) ConfigureStatusMenuIcon();
+    return true;
+}
+
+extern "C" bool MateDWStatusMenuInit(void)
+{
+    @autoreleasepool
+    {
+        bool ok = EnsureStatusMenu();
+        if (ok) ConfigureStatusMenuIcon();
+        return ok;
+    }
+}
+
+extern "C" bool MateDWStatusMenuSetItems(const char *labels, int count, int stride)
+{
+    if (count < 0 || stride <= 0) return false;
+    @autoreleasepool
+    {
+        if (!EnsureStatusMenu()) return false;
+        [gStatusMenu removeAllItems];
+
+        for (int i = 0; i < count; i++)
+        {
+            const char *label = labels != NULL ? labels + (i * stride) : "";
+            size_t length = strnlen(label, (size_t)stride);
+            NSString *title = [[NSString alloc] initWithBytes:label length:length encoding:NSUTF8StringEncoding];
+            if (title == nil) title = @"";
+
+            if ([title isEqualToString:@"Separator"])
+            {
+                [gStatusMenu addItem:[NSMenuItem separatorItem]];
+                continue;
+            }
+
+            NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:title action:@selector(itemSelected:) keyEquivalent:@""];
+            [item setTarget:gStatusMenuTarget];
+            [item setTag:i];
+            [gStatusMenu addItem:item];
+        }
+        return true;
+    }
+}
+
+extern "C" int MateDWStatusMenuPollSelectedIndex(void)
+{
+    NSInteger selected = gStatusMenuSelectedIndex;
+    gStatusMenuSelectedIndex = -1;
+    return (int)selected;
+}
+
+extern "C" bool MateDWStatusMenuIsOpen(void)
+{
+    return gStatusMenuOpen;
+}
+
+extern "C" void MateDWStatusMenuDispose(void)
+{
+    @autoreleasepool
+    {
+        if (gStatusMenuItem != nil)
+        {
+            [[NSStatusBar systemStatusBar] removeStatusItem:gStatusMenuItem];
+        }
+        gStatusMenuItem = nil;
+        gStatusMenu = nil;
+        gStatusMenuTarget = nil;
+        gStatusMenuDelegate = nil;
+        gStatusMenuSelectedIndex = -1;
+        gStatusMenuOpen = false;
+    }
+}
+
 extern "C" bool MateDWGetCursorPosition(MateDWPoint *point)
 {
     if (point == NULL) return false;
@@ -601,6 +806,11 @@ extern "C" bool MateDWGetCursorPosition(MateDWPoint *point)
     point->x = location.x;
     point->y = location.y;
     return true;
+}
+
+extern "C" bool MateDWIsLeftMouseButtonPressed(void)
+{
+    return CGEventSourceButtonState(kCGEventSourceStateCombinedSessionState, kCGMouseButtonLeft);
 }
 
 extern "C" int MateDWGetMonitorCount(void)
@@ -621,8 +831,13 @@ extern "C" bool MateDWGetMonitorRect(int index, MateDWRect *rect)
     if (displays == NULL) return false;
 
     CGGetActiveDisplayList(count, displays, &count);
-    CGRect bounds = CGDisplayBounds(displays[index]);
+    CGDirectDisplayID displayId = displays[index];
     free(displays);
+
+    NSScreen *screen = ScreenForDisplayID(displayId);
+    if (screen != nil && DesktopRectForScreen(screen, rect)) return true;
+
+    CGRect bounds = CGDisplayBounds(displayId);
     rect->left = CGRectGetMinX(bounds);
     rect->top = CGRectGetMinY(bounds);
     rect->right = CGRectGetMaxX(bounds);

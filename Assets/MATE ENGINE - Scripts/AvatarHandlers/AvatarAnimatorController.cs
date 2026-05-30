@@ -1,4 +1,10 @@
 ﻿using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+using System.Runtime.InteropServices;
+#endif
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 using NAudio.CoreAudioApi;
 #endif
@@ -167,6 +173,9 @@ public class AvatarAnimatorController : MonoBehaviour
             SetDancing(false);
         }
         if (Input.GetMouseButtonUp(0)) mouseHeld = false;
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+        if (mouseHeld && !IsPrimaryPointerPressed()) mouseHeld = false;
+#endif
         if (dragLockTimer > 0f)
         {
             dragLockTimer -= Time.deltaTime;
@@ -211,6 +220,33 @@ public class AvatarAnimatorController : MonoBehaviour
         isDragging = value;
         animator.SetBool(isDraggingParam, value);
     }
+
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+    static bool IsPrimaryPointerPressed()
+    {
+        try { return MacNative.IsLeftMouseButtonPressed(); }
+        catch { }
+        return IsUnityPrimaryPointerPressed();
+    }
+
+    static bool IsUnityPrimaryPointerPressed()
+    {
+#if ENABLE_LEGACY_INPUT_MANAGER
+        return Input.GetMouseButton(0);
+#elif ENABLE_INPUT_SYSTEM
+        return Mouse.current != null && Mouse.current.leftButton.isPressed;
+#else
+        return true;
+#endif
+    }
+
+    static class MacNative
+    {
+        [DllImport("MateDesktopWindowMac", EntryPoint = "MateDWIsLeftMouseButtonPressed")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool IsLeftMouseButtonPressed();
+    }
+#endif
 
     void UpdateIdleStatus()
     {

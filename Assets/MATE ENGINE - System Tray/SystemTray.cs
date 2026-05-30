@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils;
 using System.Reflection;
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+using System.Runtime.InteropServices;
+#endif
 
 public class SystemTray : MonoBehaviour
 {
@@ -23,13 +27,52 @@ public class SystemTray : MonoBehaviour
     [SerializeField] private string iconName;
     [SerializeField] public List<TrayAction> actions = new();
 
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+    private const int MacMenuLabelStride = 256;
+    private const float MacMenuRefreshInterval = 0.5f;
+    private readonly List<Action> macMenuActions = new();
+    private bool macStatusMenuInitialized;
+    private float nextMacMenuRefreshTime;
+#endif
+
     void Awake()
     {
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         TrayIcon.OnBuildMenu = BuildMenu;
         TrayIcon.Init("App", iconName, icon, BuildMenu());
+#elif UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+        InitMacStatusMenu();
 #endif
     }
+
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+    void Update()
+    {
+        if (!macStatusMenuInitialized) return;
+
+        int selectedIndex = MacStatusMenu.PollSelectedIndex();
+        if (selectedIndex >= 0 && selectedIndex < macMenuActions.Count)
+        {
+            try { macMenuActions[selectedIndex]?.Invoke(); }
+            catch (Exception e) { Debug.LogException(e); }
+            RefreshMacStatusMenu();
+            return;
+        }
+
+        if (!MacStatusMenu.IsOpen() && Time.unscaledTime >= nextMacMenuRefreshTime)
+            RefreshMacStatusMenu();
+    }
+
+    void OnDestroy()
+    {
+        DisposeMacStatusMenu();
+    }
+
+    void OnApplicationQuit()
+    {
+        DisposeMacStatusMenu();
+    }
+#endif
 
     private List<(string, Action)> BuildMenu()
     {
@@ -47,6 +90,7 @@ public class SystemTray : MonoBehaviour
                 context.Add((action.label, () => ButtonAction(action)));
             }
         }
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         var app = FindObjectOfType<RemoveTaskbarApp>();
         bool hidden = app != null && app.IsHidden;
         string toggleLabel = hidden ? "✖ Show App in Taskbar" : "✔ Hide App from Taskbar";
@@ -55,10 +99,80 @@ public class SystemTray : MonoBehaviour
             if (app != null) app.ToggleAppMode();
         }
         ));
+#endif
 
         context.Add(("Quit MateEngine", QuitApp));
         return context;
     }
+
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+    private void InitMacStatusMenu()
+    {
+        try
+        {
+            macStatusMenuInitialized = MacStatusMenu.Init();
+            if (macStatusMenuInitialized) RefreshMacStatusMenu();
+        }
+        catch (Exception e)
+        {
+            macStatusMenuInitialized = false;
+            Debug.LogWarning($"Failed to initialize macOS status menu: {e.Message}");
+        }
+    }
+
+    private void RefreshMacStatusMenu()
+    {
+        if (!macStatusMenuInitialized) return;
+
+        var entries = BuildMenu();
+        macMenuActions.Clear();
+
+        int count = entries != null ? entries.Count : 0;
+        byte[] labels = new byte[Mathf.Max(0, count) * MacMenuLabelStride];
+        for (int i = 0; i < count; i++)
+        {
+            string label = entries[i].Item1 ?? string.Empty;
+            byte[] labelBytes = Encoding.UTF8.GetBytes(label);
+            int copyLength = Mathf.Min(labelBytes.Length, MacMenuLabelStride - 1);
+            Buffer.BlockCopy(labelBytes, 0, labels, i * MacMenuLabelStride, copyLength);
+            macMenuActions.Add(entries[i].Item2);
+        }
+
+        MacStatusMenu.SetItems(labels, count, MacMenuLabelStride);
+        nextMacMenuRefreshTime = Time.unscaledTime + MacMenuRefreshInterval;
+    }
+
+    private void DisposeMacStatusMenu()
+    {
+        if (!macStatusMenuInitialized) return;
+        macStatusMenuInitialized = false;
+        try { MacStatusMenu.Dispose(); }
+        catch { }
+    }
+
+    private static class MacStatusMenu
+    {
+        private const string Lib = "MateDesktopWindowMac";
+
+        [DllImport(Lib, EntryPoint = "MateDWStatusMenuInit")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool Init();
+
+        [DllImport(Lib, EntryPoint = "MateDWStatusMenuSetItems")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool SetItems([In] byte[] labels, int count, int stride);
+
+        [DllImport(Lib, EntryPoint = "MateDWStatusMenuPollSelectedIndex")]
+        public static extern int PollSelectedIndex();
+
+        [DllImport(Lib, EntryPoint = "MateDWStatusMenuIsOpen")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool IsOpen();
+
+        [DllImport(Lib, EntryPoint = "MateDWStatusMenuDispose")]
+        public static extern void Dispose();
+    }
+#endif
 
     private bool GetToggleState(TrayAction action)
     {

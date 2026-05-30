@@ -3,9 +3,22 @@
 <plist version="1.0">
 <dict>
 	<key>files</key>
-	<dict/>
+	<dict>
+		<key>Resources/macOS_menu_bar_item_icon.svg</key>
+		<data>
+		7FuNAwi/fgd8laXGzhC68YWl1ks=
+		</data>
+	</dict>
 	<key>files2</key>
-	<dict/>
+	<dict>
+		<key>Resources/macOS_menu_bar_item_icon.svg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			HhKr+sP+EtXPetzCprRlH/rbH9HOpGBXrtg2siqmdzc=
+			</data>
+		</dict>
+	</dict>
 	<key>rules</key>
 	<dict>
 		<key>^Resources/</key>
