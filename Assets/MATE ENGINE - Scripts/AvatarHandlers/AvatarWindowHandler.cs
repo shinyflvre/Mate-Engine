@@ -1032,8 +1032,8 @@ public class AvatarWindowHandler : MonoBehaviour
     {
         if (windowId == IntPtr.Zero) return true;
         if (windowApi == null) windowApi = DesktopWindowApi.Current;
-        if (windowApi != null && windowApi.IsWindowMinimized(windowId)) return true;
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+        if (windowApi != null && windowApi.IsWindowMinimized(windowId)) return true;
         return IsCloaked(windowId);
 #else
         return windowApi == null || !windowApi.IsWindowAlive(windowId);

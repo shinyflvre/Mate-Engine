@@ -20,7 +20,7 @@ COMMON_FLAGS=(
   -fblocks
   -bundle
   -isysroot "$SDK_PATH"
-  -mmacosx-version-min=11.0
+  -mmacosx-version-min=12.0
   -framework Cocoa
   -framework CoreGraphics
 )
