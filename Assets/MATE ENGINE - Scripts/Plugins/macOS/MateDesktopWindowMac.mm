@@ -43,6 +43,41 @@ typedef struct __attribute__((packed)) MateDWWindowInfo
     char title[256];
 } MateDWWindowInfo;
 
+static NSStatusItem *gStatusMenuItem = nil;
+static NSMenu *gStatusMenu = nil;
+static NSInteger gStatusMenuSelectedIndex = -1;
+static bool gStatusMenuOpen = false;
+
+@interface MateDWStatusMenuTarget : NSObject
+- (void)itemSelected:(id)sender;
+@end
+
+@implementation MateDWStatusMenuTarget
+- (void)itemSelected:(id)sender
+{
+    if ([sender respondsToSelector:@selector(tag)])
+        gStatusMenuSelectedIndex = [sender tag];
+}
+@end
+
+@interface MateDWStatusMenuDelegate : NSObject <NSMenuDelegate>
+@end
+
+@implementation MateDWStatusMenuDelegate
+- (void)menuWillOpen:(NSMenu *)menu
+{
+    gStatusMenuOpen = true;
+}
+
+- (void)menuDidClose:(NSMenu *)menu
+{
+    gStatusMenuOpen = false;
+}
+@end
+
+static MateDWStatusMenuTarget *gStatusMenuTarget = nil;
+static MateDWStatusMenuDelegate *gStatusMenuDelegate = nil;
+
 static void CopyUTF8(NSString *source, char *destination, size_t capacity)
 {
     if (capacity == 0) return;
@@ -631,6 +666,133 @@ extern "C" void MateDWSetOwnTopmost(bool enabled)
         gOwnTopmostStateKnown = true;
         gOwnTopmostState = enabled;
         gOwnTopmostWindowNumber = windowNumber;
+    }
+}
+
+static NSImage *LoadStatusMenuTemplateIcon(void)
+{
+    NSBundle *bundle = [NSBundle bundleForClass:[MateDWStatusMenuTarget class]];
+    NSString *path = [bundle pathForResource:@"macOS_menu_bar_item_icon" ofType:@"svg"];
+    if (path == nil) return nil;
+
+    NSImage *image = [[NSImage alloc] initWithContentsOfFile:path];
+    if (image == nil) return nil;
+
+    [image setTemplate:YES];
+    [image setSize:NSMakeSize(18.0, 18.0)];
+    return image;
+}
+
+static void ConfigureStatusMenuIcon(void)
+{
+    if (gStatusMenuItem == nil) return;
+    NSStatusBarButton *button = [gStatusMenuItem button];
+    if (button == nil) return;
+
+    NSImage *image = LoadStatusMenuTemplateIcon();
+    if (image != nil)
+    {
+        [button setImage:image];
+        [button setTitle:@""];
+    }
+    else
+    {
+        [button setImage:nil];
+        [button setTitle:@"ME"];
+    }
+    [button setToolTip:@"MateEngine"];
+}
+
+static bool EnsureStatusMenu(void)
+{
+    if (gStatusMenuItem == nil)
+    {
+        gStatusMenuItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
+        if (gStatusMenuItem == nil) return false;
+    }
+
+    if (gStatusMenuTarget == nil) gStatusMenuTarget = [[MateDWStatusMenuTarget alloc] init];
+    if (gStatusMenuDelegate == nil) gStatusMenuDelegate = [[MateDWStatusMenuDelegate alloc] init];
+
+    if (gStatusMenu == nil)
+    {
+        gStatusMenu = [[NSMenu alloc] initWithTitle:@"MateEngine"];
+        [gStatusMenu setDelegate:gStatusMenuDelegate];
+        [gStatusMenuItem setMenu:gStatusMenu];
+    }
+
+    NSStatusBarButton *button = [gStatusMenuItem button];
+    bool needsIcon = button != nil && [button image] == nil && [[button title] length] == 0;
+    if (needsIcon) ConfigureStatusMenuIcon();
+    return true;
+}
+
+extern "C" bool MateDWStatusMenuInit(void)
+{
+    @autoreleasepool
+    {
+        bool ok = EnsureStatusMenu();
+        if (ok) ConfigureStatusMenuIcon();
+        return ok;
+    }
+}
+
+extern "C" bool MateDWStatusMenuSetItems(const char *labels, int count, int stride)
+{
+    if (count < 0 || stride <= 0) return false;
+    @autoreleasepool
+    {
+        if (!EnsureStatusMenu()) return false;
+        [gStatusMenu removeAllItems];
+
+        for (int i = 0; i < count; i++)
+        {
+            const char *label = labels != NULL ? labels + (i * stride) : "";
+            size_t length = strnlen(label, (size_t)stride);
+            NSString *title = [[NSString alloc] initWithBytes:label length:length encoding:NSUTF8StringEncoding];
+            if (title == nil) title = @"";
+
+            if ([title isEqualToString:@"Separator"])
+            {
+                [gStatusMenu addItem:[NSMenuItem separatorItem]];
+                continue;
+            }
+
+            NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:title action:@selector(itemSelected:) keyEquivalent:@""];
+            [item setTarget:gStatusMenuTarget];
+            [item setTag:i];
+            [gStatusMenu addItem:item];
+        }
+        return true;
+    }
+}
+
+extern "C" int MateDWStatusMenuPollSelectedIndex(void)
+{
+    NSInteger selected = gStatusMenuSelectedIndex;
+    gStatusMenuSelectedIndex = -1;
+    return (int)selected;
+}
+
+extern "C" bool MateDWStatusMenuIsOpen(void)
+{
+    return gStatusMenuOpen;
+}
+
+extern "C" void MateDWStatusMenuDispose(void)
+{
+    @autoreleasepool
+    {
+        if (gStatusMenuItem != nil)
+        {
+            [[NSStatusBar systemStatusBar] removeStatusItem:gStatusMenuItem];
+        }
+        gStatusMenuItem = nil;
+        gStatusMenu = nil;
+        gStatusMenuTarget = nil;
+        gStatusMenuDelegate = nil;
+        gStatusMenuSelectedIndex = -1;
+        gStatusMenuOpen = false;
     }
 }
 
