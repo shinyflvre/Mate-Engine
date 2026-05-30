@@ -1,5 +1,7 @@
 using UnityEngine;
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
+#endif
 
 public class AvatarBigScreenScreenSaver : MonoBehaviour
 {
@@ -33,6 +35,7 @@ public class AvatarBigScreenScreenSaver : MonoBehaviour
     private Vector2 lastMousePos;
     private float idleTimer = 0f;
 
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
     [DllImport("user32.dll")]
     private static extern bool GetCursorPos(out POINT lpPoint);
 
@@ -45,6 +48,7 @@ public class AvatarBigScreenScreenSaver : MonoBehaviour
         public int X;
         public int Y;
     }
+#endif
 
     void Start()
     {
@@ -185,19 +189,30 @@ public class AvatarBigScreenScreenSaver : MonoBehaviour
 
     Vector2 GetGlobalMousePosition()
     {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         POINT point;
         GetCursorPos(out point);
         return new Vector2(point.X, point.Y);
+#else
+        var api = DesktopWindowApi.Current;
+        if (api != null && api.TryGetCursorPosition(out DesktopPoint point))
+            return new Vector2(point.X, point.Y);
+        return Input.mousePosition;
+#endif
     }
 
     bool IsAnyKeyPressed()
     {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         for (int key = 0x08; key <= 0xFE; key++)
         {
             if ((GetAsyncKeyState(key) & 0x8000) != 0)
                 return true;
         }
         return false;
+#else
+        return Input.anyKeyDown;
+#endif
     }
 
     bool IsInAllowedState()
@@ -214,6 +229,7 @@ public class AvatarBigScreenScreenSaver : MonoBehaviour
     private bool lastGlobalMouseDown = false;
     private bool IsGlobalUserInput()
     {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         bool mouseDown = (GetAsyncKeyState(0x01) & 0x8000) != 0;
         bool mouseClick = mouseDown && !lastGlobalMouseDown;
         lastGlobalMouseDown = mouseDown;
@@ -228,6 +244,12 @@ public class AvatarBigScreenScreenSaver : MonoBehaviour
             }
         }
         return mouseClick || keyPressed;
+#else
+        bool mouseDown = Input.GetMouseButton(0);
+        bool mouseClick = mouseDown && !lastGlobalMouseDown;
+        lastGlobalMouseDown = mouseDown;
+        return mouseClick || Input.anyKeyDown;
+#endif
     }
 
 }

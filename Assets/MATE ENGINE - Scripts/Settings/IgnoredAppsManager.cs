@@ -4,7 +4,9 @@ using TMPro;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 using NAudio.CoreAudioApi;
+#endif
 
 public class AllowedAppsManager : MonoBehaviour
 {
@@ -13,16 +15,20 @@ public class AllowedAppsManager : MonoBehaviour
     public Transform allowedAppsListContent;
     public GameObject allowedAppItemPrefab;
 
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
     private MMDeviceEnumerator enumerator;
     private MMDevice defaultDevice;
+#endif
 
     private List<string> currentRunningAppNames = new List<string>();
     private List<string> allowedApps => SaveLoadHandler.Instance.data.allowedApps;
 
     private void Start()
     {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         enumerator = new MMDeviceEnumerator();
         UpdateDefaultDevice();
+#endif
 
         addToAllowedListButton.onClick.AddListener(() =>
         {
@@ -47,8 +53,10 @@ public class AllowedAppsManager : MonoBehaviour
 
     private void UpdateDefaultDevice()
     {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         defaultDevice?.Dispose();
-        defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+        defaultDevice = enumerator?.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+#endif
     }
 
     private void RefreshRunningAppsDropdown()
@@ -107,8 +115,10 @@ public class AllowedAppsManager : MonoBehaviour
     private List<string> GetRunningAudioAppNames()
     {
         var appNames = new HashSet<string>();
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         try
         {
+            if (defaultDevice == null) return appNames.OrderBy(n => n).ToList();
             var sessions = defaultDevice.AudioSessionManager.Sessions;
             for (int i = 0; i < sessions.Count; i++)
             {
@@ -126,14 +136,17 @@ public class AllowedAppsManager : MonoBehaviour
             }
         }
         catch { }
+#endif
 
         return appNames.OrderBy(n => n).ToList();
     }
 
     private void OnDestroy()
     {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         enumerator?.Dispose();
         defaultDevice?.Dispose();
+#endif
     }
 
     public void RefreshAppListOnMenuOpen()

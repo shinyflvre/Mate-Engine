@@ -85,9 +85,6 @@ public class AISystemPromptBinder : MonoBehaviour
 
     static string GetFixedPromptPath()
     {
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var localLow = Path.GetFullPath(Path.Combine(localAppData, @"..\LocalLow"));
-        var dir = Path.Combine(localLow, "Shinymoon", "MateEngineX");
-        return Path.Combine(dir, "ZomeAI_prompt.txt");
+        return MateEnginePaths.DataFilePath("ZomeAI_prompt.txt");
     }
 }

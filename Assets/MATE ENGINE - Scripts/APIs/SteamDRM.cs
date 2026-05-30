@@ -22,7 +22,7 @@ public static class SteamDRM
         public List<int> dlc;
     }
 
-    static string TokenPath => Path.Combine(Application.persistentDataPath, "SteamDRM.token");
+    static string TokenPath => MateEnginePaths.DataFilePath("SteamDRM.token");
 
     public static bool Initialized => initialized;
     public static bool IsEntitled => entitled;

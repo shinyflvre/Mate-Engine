@@ -66,7 +66,7 @@ public class UploadButtonHoldHandler : MonoBehaviour, IPointerDownHandler, IPoin
     {
         if (IsThumbnailMissing() || IsThumbnailTooBig())
         {
-            string[] paths = StandaloneFileBrowser.OpenFilePanel("Select PNG Thumbnail (Max 700KB)", "", new[] {
+            string[] paths = StandaloneFileBrowser.OpenFilePanel("Select PNG Thumbnail (Max 700KB)", MateEnginePaths.DefaultImportDirectory, new[] {
                 new ExtensionFilter("Image", "png")
             }, false);
 
@@ -82,7 +82,7 @@ public class UploadButtonHoldHandler : MonoBehaviour, IPointerDownHandler, IPoin
                 return;
             }
 
-            string thumbnailsFolder = Path.Combine(Application.persistentDataPath, "Thumbnails");
+            string thumbnailsFolder = MateEnginePaths.ThumbnailsDir;
             if (!Directory.Exists(thumbnailsFolder))
                 Directory.CreateDirectory(thumbnailsFolder);
 
@@ -91,7 +91,7 @@ public class UploadButtonHoldHandler : MonoBehaviour, IPointerDownHandler, IPoin
             File.Copy(paths[0], destinationPath, true);
             entry.thumbnailPath = destinationPath;
 
-            string avatarsJsonPath = Path.Combine(Application.persistentDataPath, "avatars.json");
+            string avatarsJsonPath = MateEnginePaths.AvatarsJsonPath;
             if (File.Exists(avatarsJsonPath))
             {
                 var json = File.ReadAllText(avatarsJsonPath);
@@ -238,7 +238,7 @@ public class UploadButtonHoldHandler : MonoBehaviour, IPointerDownHandler, IPoin
     private IEnumerator WaitForSteamIdAndRelabel(string filePath, float timeoutSeconds)
     {
         float t = 0f;
-        string avatarsJsonPath = Path.Combine(Application.persistentDataPath, "avatars.json");
+        string avatarsJsonPath = MateEnginePaths.AvatarsJsonPath;
 
         while (t < timeoutSeconds)
         {

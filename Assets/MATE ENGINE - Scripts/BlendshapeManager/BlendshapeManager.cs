@@ -229,9 +229,7 @@ public class BlendshapeManager : MonoBehaviour
 
     private string GetSaveFolder()
     {
-        string folder = Path.Combine(Application.persistentDataPath, "Blendshapes");
-        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-        return folder;
+        return MateEnginePaths.BlendshapesDir;
     }
 
     private string GetSavePath()

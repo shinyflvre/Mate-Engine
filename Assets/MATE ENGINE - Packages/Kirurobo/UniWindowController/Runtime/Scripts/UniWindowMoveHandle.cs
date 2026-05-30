@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+using System.Runtime.InteropServices;
+#endif
 #if ENABLE_LEGACY_INPUT_MANAGER
 #elif ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -61,10 +64,22 @@ namespace Kirurobo
 
         private void EndDragging()
         {
-            if (_isDragging) _uniwinc.isHitTestEnabled = _isHitTestEnabled;
+            if (_isDragging && _uniwinc) _uniwinc.isHitTestEnabled = _isHitTestEnabled;
             _isDragging = false;
             _dragVel = Vector2.zero;
         }
+
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+        void OnApplicationFocus(bool hasFocus)
+        {
+            if (!hasFocus) EndDragging();
+        }
+
+        void OnDisable()
+        {
+            EndDragging();
+        }
+#endif
 
         public void OnDrag(PointerEventData eventData)
         {
@@ -95,10 +110,44 @@ namespace Kirurobo
         {
             if (!_uniwinc) return;
             if (!_isDragging) return;
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+            if (!IsPrimaryPointerPressed())
+            {
+                EndDragging();
+                return;
+            }
+#endif
             float t = Mathf.Clamp01(dragSmooth * 0.01f) * MaxSmoothTime;
             if (t <= 0f) _uniwinc.windowPosition = _dragTarget;
             else _uniwinc.windowPosition = Vector2.SmoothDamp(_uniwinc.windowPosition, _dragTarget, ref _dragVel, t);
         }
+
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+        private static bool IsPrimaryPointerPressed()
+        {
+            try { return MacNative.IsLeftMouseButtonPressed(); }
+            catch { }
+            return IsUnityPrimaryPointerPressed();
+        }
+
+        private static bool IsUnityPrimaryPointerPressed()
+        {
+#if ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetMouseButton(0);
+#elif ENABLE_INPUT_SYSTEM
+            return Mouse.current != null && Mouse.current.leftButton.isPressed;
+#else
+            return true;
+#endif
+        }
+
+        private static class MacNative
+        {
+            [DllImport("MateDesktopWindowMac", EntryPoint = "MateDWIsLeftMouseButtonPressed")]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool IsLeftMouseButtonPressed();
+        }
+#endif
 
         private void RefreshAnimator()
         {

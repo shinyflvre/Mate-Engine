@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
@@ -14,11 +15,9 @@ public class SaveLoadHandler : MonoBehaviour
     private static string fileName = "settings.json";
     private static string customDataDir = null;
 
-    private string BaseDir => string.IsNullOrEmpty(customDataDir)
-        ? Application.persistentDataPath
-        : Path.Combine(Application.persistentDataPath, customDataDir);
+    private string BaseDir => MateEnginePaths.SettingsDirectory(customDataDir);
 
-    private string FilePath => Path.Combine(BaseDir, fileName);
+    private string FilePath => MateEnginePaths.SettingsFilePath(customDataDir, fileName);
 
     private void Awake()
     {
@@ -58,6 +57,23 @@ public class SaveLoadHandler : MonoBehaviour
         {
             limiter.targetFPS = data.fpsLimit;
             limiter.ApplyFPSLimit();
+        }
+    }
+
+    private void Start()
+    {
+        StartCoroutine(RestoreWindowSizeAfterStartup());
+    }
+
+    private IEnumerator RestoreWindowSizeAfterStartup()
+    {
+        yield return null;
+        for (int i = 0; i < 60; i++)
+        {
+            if (data != null && MateEngineWindowSize.TryApplyToExistingController(data.windowSizeState))
+                yield break;
+
+            yield return null;
         }
     }
 

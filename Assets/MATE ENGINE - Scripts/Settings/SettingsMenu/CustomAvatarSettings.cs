@@ -30,7 +30,7 @@ public class CustomAvatarSettings : MonoBehaviour
     private Dictionary<string, int> dropdownValues = new();
 
     private string fileName = "modded_settings.json";
-    private string FilePath => Path.Combine(Application.persistentDataPath, fileName);
+    private string FilePath => MateEnginePaths.DataFilePath(fileName);
 
     [Serializable]
     public class SaveData
