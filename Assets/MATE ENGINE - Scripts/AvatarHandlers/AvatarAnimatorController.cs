@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using NAudio.CoreAudioApi;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,6 +41,14 @@ public class AvatarAnimatorController : MonoBehaviour
     public bool enableHusbandoMode = false;
     private static readonly int isMaleParam = Animator.StringToHash("isMale");
     private static readonly int isFemaleParam = Animator.StringToHash("isFemale");
+
+    [Header("BPM Sync")]
+    private AudioSessionControl activeAudioSession;
+    private List<float> bpmHistory = new List<float>();
+    private float lastBeatTime = 0f;
+    private float dynamicBeatThreshold = 0.05f;
+    private float currentEstimatedBPM = 120f;
+    private float lastValidSoundTime = 0f;
 
 
     void OnEnable()
@@ -94,10 +102,16 @@ public class AvatarAnimatorController : MonoBehaviour
     {
         isDancing = value;
         animator.SetBool(isDancingParam, value);
-        if (!value && danceTransitionCoroutine != null)
+        if (!value)
         {
-            StopCoroutine(danceTransitionCoroutine);
-            danceTransitionCoroutine = null;
+            animator.speed = 1f; // Reset speed when not dancing
+            bpmHistory.Clear();
+            activeAudioSession = null;
+            if (danceTransitionCoroutine != null)
+            {
+                StopCoroutine(danceTransitionCoroutine);
+                danceTransitionCoroutine = null;
+            }
         }
     }
 
@@ -122,13 +136,24 @@ public class AvatarAnimatorController : MonoBehaviour
                         string pname = Process.GetProcessById(pid)?.ProcessName;
                         if (string.IsNullOrEmpty(pname)) continue;
                         for (int j = 0; j < allowedApps.Count; j++)
-                            if (pname.StartsWith(allowedApps[j], System.StringComparison.OrdinalIgnoreCase)) return true;
+                            if (pname.StartsWith(allowedApps[j], System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                activeAudioSession = s; // Track the session
+                                return true;
+                            }
                     }
                     catch { continue; }
                 }
             }
         }
         catch { defaultDevice?.Dispose(); defaultDevice = null; }
+        
+        // If we are currently dancing, and heard a peak recently, ignore this silence.
+        if (isDancing && Time.time - lastValidSoundTime < 1.5f) {
+            return true;
+        }
+
+        activeAudioSession = null;
         return false;
     }
 
@@ -173,6 +198,11 @@ public class AvatarAnimatorController : MonoBehaviour
         }
         UpdateIdleStatus();
 
+        if (isDancing)
+        {
+            ProcessBpmSync();
+        }
+
         if (isDancing && enableDanceSwitch)
         {
             danceTimer += Time.deltaTime;
@@ -194,6 +224,59 @@ public class AvatarAnimatorController : MonoBehaviour
     {
         isDragging = value;
         animator.SetBool(isDraggingParam, value);
+    }
+
+    void ProcessBpmSync()
+    {
+        if (activeAudioSession == null) return;
+        try
+        {
+            float peak = activeAudioSession.AudioMeterInformation.MasterPeakValue;
+            if (peak > SOUND_THRESHOLD) lastValidSoundTime = Time.time;
+            
+            // Slower dynamic threshold decay naturally filters out weaker off-beats (eighth notes)
+            dynamicBeatThreshold = Mathf.Lerp(dynamicBeatThreshold, SOUND_THRESHOLD, Time.deltaTime * 0.5f);
+            
+            if (peak > dynamicBeatThreshold && peak > SOUND_THRESHOLD * 1.5f)
+            {
+                float timeSinceLastBeat = Time.time - lastBeatTime;
+                
+                // Expand range to catch variations, but use logic to normalize
+                if (timeSinceLastBeat > 0.25f && timeSinceLastBeat < 1.5f)
+                {
+                    float instantaneousBPM = 60f / timeSinceLastBeat;
+                    
+                    // If the detected BPM is very fast (> 135), we likely caught eighth notes 
+                    // of a slower song, or it's a fast song where half-time dancing looks better.
+                    if (instantaneousBPM > 135f)
+                    {
+                        instantaneousBPM /= 2f;
+                    }
+
+                    bpmHistory.Add(instantaneousBPM);
+                    if (bpmHistory.Count > 16) bpmHistory.RemoveAt(0); // keep last 16 beats
+
+                    // Calculate average
+                    float sum = 0f;
+                    for (int i = 0; i < bpmHistory.Count; i++) sum += bpmHistory[i];
+                    currentEstimatedBPM = sum / bpmHistory.Count;
+
+                    // Update animator speed (assuming default dance animations are authored for 120 BPM)
+                    animator.speed = Mathf.Clamp(currentEstimatedBPM / 120f, 0.5f, 1.5f);
+                }
+                
+                if (timeSinceLastBeat > 0.25f) // Prevent rapid double-triggering
+                {
+                    lastBeatTime = Time.time;
+                    dynamicBeatThreshold = peak; // Jump threshold to current peak
+                }
+            }
+        }
+        catch 
+        { 
+            // In case session becomes invalid
+            activeAudioSession = null; 
+        }
     }
 
     void UpdateIdleStatus()
