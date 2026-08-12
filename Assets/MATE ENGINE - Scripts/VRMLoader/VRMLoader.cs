@@ -225,7 +225,7 @@ public class VRMLoader : MonoBehaviour
             return;
         }
 
-        var prefab = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+        var prefab = bundle.LoadAsset<GameObject>("__TempExport");
         if (prefab == null)
         {
             Debug.LogError("[VRMLoader] No prefab found in AssetBundle.");
